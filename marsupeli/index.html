@@ -32,7 +32,9 @@ var cursors;
 var food;
 var lastFood = 0.0;
 var lastSnake = 0.0;
+var lastBird = 0.0;
 var snakes;
+var birds;
 var shots;
         
 var playerMaxHealth = 6;
@@ -56,6 +58,7 @@ function preload ()
     this.load.image('sydan', 'sydan.png');
     this.load.image('pullo', 'pullo.png');
     this.load.image('tuli', 'tuli.png');
+    this.load.image('kotka', 'kotka.png');
 }
 
 function create ()
@@ -80,9 +83,11 @@ function create ()
     player = this.physics.add.sprite(400, 240, 'marsu');
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
+    player.lastDir = 1.0;
     
     food = this.physics.add.group();
     snakes = this.physics.add.group();
+    birds = this.physics.add.group();
     bottles = this.physics.add.group();
     shots = this.physics.add.group();
     
@@ -90,12 +95,15 @@ function create ()
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(food, platforms);
     this.physics.add.collider(snakes, platforms);
+    this.physics.add.collider(birds, platforms);
     this.physics.add.collider(shots, platforms);
     
     this.physics.add.overlap(player, food, eatFood, null, this);
     
-    this.physics.add.overlap(player, snakes, hitBySnake, null, this);
-    this.physics.add.overlap(shots, snakes, snakeHitByShot, null, this);
+    this.physics.add.overlap(player, snakes, hitByEnemy, null, this);
+    this.physics.add.overlap(player, birds, hitByEnemy, null, this);
+    this.physics.add.overlap(shots, snakes, enemyHitByShot, null, this);
+    this.physics.add.overlap(shots, birds, enemyHitByShot, null, this);
     
     // GUI
     scoreText = this.add.text(5, 5, 'Pisteet: 0', { fontFamily: 'Courier' }).setColor('#000000');
@@ -129,14 +137,26 @@ function update ()
         } 
     }
     
-    // create snakes evey 30 seconds
-     if (curTime - lastSnake > 3000) {
+    // create snakes evey 5 seconds
+    if (curTime - lastSnake > 5000) {
         lastSnake = curTime;
         var xpos = Math.random() > 0.5 ? 50 : 800 - 50;
         snake =snakes.create(xpos, 600-75, 'snake');  
         snake.setBounce(0.1);
         snake.setCollideWorldBounds(true);
         snake.lastUpdate = curTime;
+    }
+    
+    // create birds every 12 seconds
+    if (curTime - lastBird > 12000) {
+        lastBird = curTime;
+        var xpos = Math.random() * 750 + 25;
+        bird = birds.create(xpos, 25, 'kotka');  
+        bird.setBounce(0.1);
+        bird.setCollideWorldBounds(true);
+        bird.lastUpdate = curTime;
+        bird.setGravity(0, -400); // added on top of normal gravity
+        bird.setVelocityX(Math.random()*200 - 100);
     }
     
     
@@ -160,7 +180,20 @@ function update ()
                     }
                 }        
             }
-            
+        },
+    this);
+    
+    // change bird motion
+    birds.children.each(
+        function(bird) {
+            if (curTime - bird.lastUpdate > 1000) {
+                bird.lastUpdate = curTime;
+                bird.setVelocityX(Math.random()*200 - 100);
+                if (Math.random() > 0.75) {
+                    bird.setVelocityY(400);
+                } 
+                
+            }
         },
     this);
     
@@ -175,9 +208,11 @@ function update ()
     
     if (cursors.left.isDown) {
         player.setVelocityX(-160);
+        player.lastDir = -1.0;
     }
     else if (cursors.right.isDown) {
         player.setVelocityX(160);
+        player.lastDir = 1.0;
     }
     else {
         player.setVelocityX(0);
@@ -190,8 +225,8 @@ function update ()
         console.log('shoot')
         lastShot = curTime;
         var newShot = shots.create(player.x, player.y, 'tuli');
-        var velx = player.body.velocity.x;
-        var vely = player.body.velocity.y;
+        var velx = player.body.velocity.x + player.lastDir*100;
+        var vely = player.body.velocity.y - 50;
         newShot.setVelocity(velx, vely);
         newShot.setBounce(0.95);
         newShot.setCollideWorldBounds(true);
@@ -238,17 +273,17 @@ function eatFood(player, f)
     f.destroy();
 }
         
-function hitBySnake(player, snake)
+function hitByEnemy(player, enemy)
 {
     changeHealth(this, -2);
-    snake.destroy();
+    enemy.destroy();
 }
         
-function snakeHitByShot(shot, snake)
+function enemyHitByShot(shot, enemy)
 {
     updateScore(+10);
     shot.destroy();
-    snake.destroy();
+    enemy.destroy();
 }
     
 function updateScore(amount) {
