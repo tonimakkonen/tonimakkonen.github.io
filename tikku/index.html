@@ -306,7 +306,6 @@ function update ()
                 last_tick = cur_time;
                 blue_units.children.each(function(unit) { run_unit_ai(unit, tick_number, this) }, this);
                 red_units.children.each(function(unit) { run_unit_ai(unit, tick_number, this) }, this);  
-                console.log('running unit AI');
                 if (tick_number % 10 == 0) mode_text.setText('Battle phase for ' + (mode_timer/10) + ' s !');
             
                 // add random gold to the field
