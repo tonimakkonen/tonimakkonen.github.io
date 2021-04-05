@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+</head>
+<body>
+
+    <script>
+
+// setting up constants
+        
+const PLAYER_BLUE = 1;
+const PLAYER_RED = 2;
+        
+const UNIT_SOLDIER = 1;
+const UNIT_BASE = 2;
+const UNIT_TURRET = 3;
+const UNIT_BARRACKS = 4;
+const UNIT_WALL = 5;
+const UNIT_CANNON = 6;
+const UNIT_FACTORY = 7;
+
+const SHOT_BASIC = 1;
+const SHOT_EXPLOSIVE = 2;
+        
+const MODE_SETUP = 1;
+const MODE_BLUE = 2;
+const MODE_RED = 3;
+const MODE_BATTLE = 4;
+const MODE_BLUE_WIN = 5;
+const MODE_RED_WIN = 6;
+
+    
+// game object properties (some things still hard coded)
+        
+        
+var unit_properties = new Map();
+unit_properties.set(UNIT_SOLDIER, 
+                    {
+    building: false, sprite: 'soldier', health: 5,
+    movement: {minspeed: 0, maxspeed: 80},
+    jump: {prob: 0.1, velocity: 300},
+    shoot: {type: SHOT_BASIC, ticks: 10, velocity: 250, amin: 20, amax: 20}
+                    });
+        
+unit_properties.set(UNIT_BASE, 
+                    {
+    building: true, width: 80, sprite: 'base', health: 200,
+    victory: true,
+    spawn: {type: UNIT_SOLDIER, ticks: 50}
+                    });
+        
+unit_properties.set(UNIT_TURRET, 
+                    {
+    building: true, width: 40, sprite: 'turret', health: 40,
+    help: 'Turret, shoots at enemy units',
+    cost: 350,
+    shoot: {type: SHOT_BASIC, ticks: 5, velocity: 300, amin: 10, amax: 50}
+                    });
+        
+unit_properties.set(UNIT_BARRACKS, 
+                    {
+    building: true, width: 40, sprite: 'barracks', health: 40,
+    help: 'Barracks, spawns soldiers',
+    cost: 100,
+    spawn: {type: UNIT_SOLDIER, ticks: 75}
+                    });
+        
+unit_properties.set(UNIT_WALL, 
+                    {
+    building: true, width: 40, sprite: 'wall', health: 100,
+    help: 'Wall, blocks enemy units and takes a lot of damage',
+    cost: 50,
+                    });
+        
+unit_properties.set(UNIT_CANNON, 
+                    {
+    building: false, sprite: 'cannon', health: 20,
+    movement: {minspeed: 25, maxspeed: 25},
+    shoot: {type: SHOT_EXPLOSIVE, ticks: 20, velocity: 300, amin: 30, amax: 50}
+                    });
+        
+unit_properties.set(UNIT_FACTORY, 
+                    {
+    building: true, width: 40, sprite: 'factory', health: 40,
+    help: 'Factory, spawns artillery',
+    cost: 400,
+    spawn: {type: UNIT_CANNON, ticks: 150}
+                    });
+    
+const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY];
+    
+var shot_properties = new Map();
+shot_properties.set(SHOT_BASIC, {sprite: 'shot', damage: 3, explosion: null});
+shot_properties.set(SHOT_EXPLOSIVE, {sprite: 'big_shot', damage: 5, explosion: {type: SHOT_BASIC, amount: 5}});
+        
+// timing system and mode system
+        
+const tick_millis = 100;
+var last_tick = 0;
+var tick_number = 0;
+        
+var mode_current = MODE_SETUP;
+var mode_timer = 0;
+var mode_text;
+var mode_ui;
+        
+// input system
+var input_last = false;
+        
+// grid system
+var game_grid = [
+    {x: 2, y: 12, player: PLAYER_BLUE},
+    {x: 3, y: 12, player: PLAYER_BLUE},
+    {x: 4, y: 12, player: PLAYER_BLUE},
+    {x: 5, y: 12, player: PLAYER_BLUE},
+    {x: 1, y: 8, player: PLAYER_BLUE},
+    {x: 3, y: 8, player: PLAYER_BLUE},
+    {x: 1, y: 5, player: PLAYER_BLUE},
+    {x: 3, y: 5, player: PLAYER_BLUE},
+    {x: 19-2, y: 12, player: PLAYER_RED},
+    {x: 19-3, y: 12, player: PLAYER_RED},
+    {x: 19-4, y: 12, player: PLAYER_RED},
+    {x: 19-5, y: 12, player: PLAYER_RED},
+    {x: 19-1, y: 8, player: PLAYER_RED},
+    {x: 19-3, y: 8, player: PLAYER_RED},
+    {x: 19-1, y: 5, player: PLAYER_RED},
+    {x: 19-3, y: 5, player: PLAYER_RED}
+]
+// automatic grid updates
+for (i = 0; i < game_grid.length; i++) {
+    game_grid[i].used = false;
+}
+        
+// game config
+    
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'phaser-example',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+var game = new Phaser.Game(config);
+        
+var game_mode
+        
+
+var blue_units;
+var blue_shots;
+var red_units;
+var red_shots;
+var gold_coins;
+        
+var ui_money_blue = null;
+var ui_money_red = null;
+var ui_grid_selected = null;
+var ui_list = []; // list of temp ui components that will be destroyed
+        
+var player_data = new Map();
+var player_lost = 0;
+player_data.set(PLAYER_BLUE, {gold: 100})
+player_data.set(PLAYER_RED, {gold: 100})
+
+
+function preload ()
+{
+    // basic
+    this.load.image('bg_image', 'bg_image.png');
+    this.load.image('tile', 'tile.png');
+    
+    // UI
+    this.load.image('ui_holder', 'ui_holder.png');
+    this.load.image('grid', 'grid.png');
+    
+    // units
+    this.load.image('blue_soldier', 'blue_soldier.png');
+    this.load.image('blue_cannon', 'blue_cannon.png');
+    this.load.image('red_soldier', 'red_soldier.png');
+    this.load.image('red_cannon', 'red_cannon.png');
+    this.load.image('blue_base', 'blue_base.png');
+    this.load.image('red_base', 'red_base.png');
+    this.load.image('blue_turret', 'blue_turret.png');
+    this.load.image('red_turret', 'red_turret.png');
+    this.load.image('blue_barracks', 'blue_barracks.png');
+    this.load.image('red_barracks', 'red_barracks.png');
+    this.load.image('blue_wall', 'blue_wall.png');
+    this.load.image('red_wall', 'red_wall.png');
+    this.load.image('blue_factory', 'blue_factory.png');
+    this.load.image('red_factory', 'red_factory.png');
+    
+    // shots
+    this.load.image('shot', 'shot.png');
+    this.load.image('big_shot', 'big_shot.png');
+    
+    // other
+    this.load.image('gold', 'gold.png');
+}
+
+function create ()
+{
+
+    // add bg image & UI
+    this.add.image(400, 300, 'bg_image');
+    this.add.image(400, 600-20, 'ui_holder');
+    
+    platforms = this.physics.add.staticGroup();
+    // ground
+    for (var i = 0; i < 20; i++) platforms.create(i*40 + 20, 600-20-40, 'tile');
+    for (var i = 0; i < 5; i++) {
+        platforms.create(i*40 + 20, 600-20-200, 'tile');
+        platforms.create(800 - (i*40 + 20), 600-20-200, 'tile');
+    }
+    for (var i = 4; i < 5; i++) {
+        platforms.create(i*40 + 20, 600-20-160, 'tile');
+        platforms.create(800 - (i*40 + 20), 600-20-160, 'tile');
+    }
+    for (var i = 0; i < 4; i++) {
+        platforms.create(i*40 + 20, 600-20-320, 'tile');
+        platforms.create(800 - (i*40 + 20), 600-20-320, 'tile');
+    }
+    
+    // unit physics groups
+    blue_units = this.physics.add.group();
+    blue_shots = this.physics.add.group();
+    red_units = this.physics.add.group();
+    red_shots = this.physics.add.group();
+    gold_coins = this.physics.add.group();
+    
+    this.physics.add.collider(blue_units, platforms);
+    this.physics.add.collider(red_units, platforms);
+    this.physics.add.collider(gold_coins, platforms);
+    this.physics.add.collider(red_units, blue_units);
+    
+    this.physics.add.overlap(blue_units, red_shots, unit_hit, null, this);
+    this.physics.add.overlap(red_units, blue_shots, unit_hit, null, this);
+    this.physics.add.overlap(blue_units, gold_coins, collect_gold, null, this);
+    this.physics.add.overlap(red_units, gold_coins, collect_gold, null, this);
+    this.physics.add.overlap(blue_shots, platforms, shot_hit_ground, null, this);
+    this.physics.add.overlap(red_shots, platforms, shot_hit_ground, null, this);
+    
+    // GUI
+    mode_text = this.add.text(20, 600-25, 'Tikku battle! Press here to start a vs game.', { fontFamily: 'Courier' }).setColor('#FFFFFF');
+    mode_text.setDepth(10);
+    ui_money_blue = this.add.text(20, 600-65, '', { fontFamily: 'Courier' }).setColor('#FFFFFF');
+    ui_money_blue.setDepth(10);
+    ui_money_red = this.add.text(800-200, 600-65, '', { fontFamily: 'Courier' }).setColor('#FFFFFF');
+    ui_money_red.setDepth(10);
+    
+    move_to_mode(MODE_SETUP, true, this);
+}
+
+function update ()
+{
+    // TODO: Handle clicks better
+    var mouse_down = game.input.mousePointer.isDown;
+    var click_now = mouse_down && !input_last;
+    input_last = mouse_down;
+    
+    if (mode_current == MODE_SETUP) {
+        if (click_now && game.input.mousePointer.y >= 560) {
+            move_to_mode(MODE_BLUE, false, this);
+        }
+    } else if (mode_current == MODE_BLUE) {
+        if (click_now && game.input.mousePointer.y >= 560) {
+            move_to_mode(MODE_RED, false, this);
+        }
+        if (click_now) {
+            if (ui_grid_selected == null) check_grid_buy(PLAYER_BLUE, this);
+            else check_buy(PLAYER_BLUE, this);
+        }
+    } else if (mode_current == MODE_RED) {
+        if (click_now && game.input.mousePointer.y >= 560) {
+            move_to_mode(MODE_BATTLE, false, this);
+        }
+        if (click_now) {
+            if (ui_grid_selected == null) check_grid_buy(PLAYER_RED, this);
+            else check_buy(PLAYER_RED, this);
+        }
+    } else if (mode_current == MODE_BATTLE) {
+        
+        if (player_lost == PLAYER_BLUE) {
+            move_to_mode(MODE_RED_WIN, false, this);
+        } else if (player_lost == PLAYER_RED) {
+            move_to_mode(MODE_BLUE_WIN, false, this);
+        } else if (mode_timer <= 0) {
+            // add money to players
+            player_data.get(PLAYER_BLUE).gold += 100;
+            player_data.get(PLAYER_RED).gold += 100;
+            update_money();
+            move_to_mode(MODE_BLUE, false, this);
+        } else {
+            cur_time = this.time.now;
+            if (cur_time - last_tick > tick_millis) {
+                last_tick = cur_time;
+                blue_units.children.each(function(unit) { run_unit_ai(unit, tick_number, this) }, this);
+                red_units.children.each(function(unit) { run_unit_ai(unit, tick_number, this) }, this);  
+                console.log('running unit AI');
+                if (tick_number % 10 == 0) mode_text.setText('Battle phase for ' + (mode_timer/10) + ' s !');
+            
+                // add random gold to the field
+                if (tick_number % 350 == 0) {
+                    gold = gold_coins.create(Math.random()*300 + 250, 0, 'gold');
+                    gold.setGravity(0, 300);
+                    gold.setBounce(0.75);
+                }
+                
+                tick_number += 1;
+                mode_timer -= 1;
+                
+                // kill shots over the border
+                blue_shots.children.each(function(shot) { check_shot_outside(shot) }, this);
+                red_shots.children.each(function(shot) { check_shot_outside(shot) }, this);
+            }
+        }
+    } else if (mode_current == MODE_BLUE_WIN || mode_current == MODE_RED_WIN) {
+        if (click_now && game.input.mousePointer.y >= 560) {
+            move_to_mode(MODE_SETUP, true, this);
+        }
+    }
+}
+
+// Grid and buy functionality
+        
+// Check if we press on a grid in the buy phase, if so create buy menu
+function check_grid_buy(player, th) {
+    var mx = game.input.mousePointer.x;
+    var my = game.input.mousePointer.y;
+    for (i = 0; i < game_grid.length; i++) {
+        grid = game_grid[i];
+        if (grid.player == player && !grid.used) {
+            var x = grid.x*40 + 20;
+            var y = grid.y*40 + 20;
+            if (mx >= x-20 && mx <= x+20 && my >= y-20 && my <= y+20) {
+                // We are about to buy something
+                grid.x_image.alpha = 1.0;
+                ui_grid_selected = grid;
+                var height = unit_buy_list.length * 30;
+                ui_buy_bg = th.add.rectangle(400, height / 2, 800, height, 0x000000);
+                ui_buy_bg.alpha = 0.5;
+                ui_list.push(ui_buy_bg);
+                for (j = 0; j < unit_buy_list.length; j++) {
+                    cost = unit_properties.get(unit_buy_list[j]).cost;
+                    var too_expensive = cost > player_data.get(player).gold;
+                    im = th.add.image(15, 30*j + 15, get_unit_graph_name(player, unit_buy_list[j]));
+                    im.setScale(0.5);
+                    if (too_expensive) im.alpha = 0.5;
+                    ui_list.push(im);
+                    color = too_expensive ? '#A00000' : '#FFFFFF';
+                    txt1 = th.add.text(90, 30*j + 10, unit_properties.get(unit_buy_list[j]).help, { fontFamily: 'Courier' }).setColor(color);
+                    ui_list.push(txt1);
+                    txt2 = th.add.text(45, 30*j + 10, cost, { fontFamily: 'Courier' }).setColor(color);
+                    ui_list.push(txt2);
+                }       
+            }
+        }
+    }
+}
+        
+function check_buy(player, th) {
+    for (i = 0; i < unit_buy_list.length; i++) {
+        if (game.input.mousePointer.y >= i*30 && game.input.mousePointer.y < i*30 + 30) {
+            // Buy the unit, if we have enough cash
+            cost = unit_properties.get(unit_buy_list[i]).cost;
+            if (cost > player_data.get(player).gold) {
+                // Do nothing if we can't afford it
+                return;
+            }
+            player_data.get(player).gold -= cost;
+            update_money();
+            // t(type, xpos, ypos, player, th)
+            new_unit = create_unit(unit_buy_list[i], ui_grid_selected.x*40 + 20, ui_grid_selected.y*40 + 20, player, th);
+            new_unit.x_grid = ui_grid_selected;
+            ui_grid_selected.used = true;
+            ui_grid_selected.x_image.destroy();
+            ui_grid_selected.x_image = null;
+            ui_grid_selected = null;
+        }
+    }
+    // We are always done after a click, clean the list
+    if (ui_grid_selected != null) {
+        ui_grid_selected.x_image.alpha = 0.25;
+        ui_grid_selected = null;
+    }
+    for(i = 0; i < ui_list.length; i++) ui_list[i].destroy();
+    ui_list = [];
+}
+
+function update_grid(player, th) {
+    for (i = 0; i < game_grid.length; i++) {
+        grid = game_grid[i];
+        if (grid.player == player && !grid.used) {
+            grid.x_image = th.add.image(grid.x*40 + 20, grid.y*40 + 20, 'grid');
+            grid.x_image.alpha = 0.25;
+        } else {
+            if (grid.x_image != null) {
+                grid.x_image.destroy();
+                grid.x_image = null;
+            }
+        }
+    }
+}
+ 
+// Moving between modes 
+        
+function move_to_mode(mode, kill_all, th) {
+    
+    // Reset various stuff
+    player_lost = 0;
+    blue_shots.children.each(function(shot) { shot.destroy(); }, this);    
+    red_shots.children.each(function(shot) { shot.destroy(); }, this);    
+    blue_units.children.each(function(unit) { reset_unit(unit, kill_all, this);  }, this);    
+    red_units.children.each(function(unit) { reset_unit(unit, kill_all, this); }, this);
+    ui_grid_selected = null;
+    for(i = 0; i < ui_list.length; i++) ui_list[i].destroy();
+    ui_list = [];
+    tick_number = 0;
+    last_tick = 0;
+    
+    mode_current = mode;
+    if (mode_current == MODE_BLUE) {
+        mode_text.setText('Blue buy phase. Press here when done.');
+        update_grid(PLAYER_BLUE, th);    
+    } else if (mode_current == MODE_RED) {
+        mode_text.setText('Red buy phase. Press here when done.');
+        update_grid(PLAYER_RED, th);
+    } else {
+        update_grid(-1, th);
+    }
+    if (mode_current == MODE_BATTLE) {
+        mode_timer = 600; // 60 seconds
+    
+        // text is updated in battle phase
+    }
+    if (mode_current == MODE_BLUE_WIN) {
+        mode_text.setText('Blue wins!');
+    }
+    if (mode_current == MODE_RED_WIN) {
+        mode_text.setText('Red wins!');
+    }
+    if (mode_current == MODE_SETUP) {
+        // reset all and create player bases
+        create_unit(UNIT_BASE, 40, 600-120, PLAYER_BLUE, th);
+        create_unit(UNIT_BASE, 800 - 40, 600-120, PLAYER_RED, th);
+        player_data.get(PLAYER_BLUE).gold = 150;
+        player_data.get(PLAYER_RED).gold = 150;
+        update_money();
+    }
+}
+        
+    
+function reset_unit(unit, kill_all, th) {
+    if (!unit.x_props.building || kill_all) {
+        unit.destroy();
+    } else {
+        unit.x_last_spawn = -1;
+        unit.x_last_shoot = 0;
+    }       
+}
+
+////////////////////
+// Creating units //
+////////////////////
+        
+function get_unit_graph_name(player, type) {
+    var graph_name;
+    if (player == PLAYER_BLUE) {
+        graph_name = 'blue_';
+    } else if (player == PLAYER_RED) {
+        graph_name = 'red_';
+    } else {
+        console.error('bad player type: ' + player);
+        return;
+    }
+    var props = unit_properties.get(type);
+    if (props == null) {
+        console.error('Unknown unit type');
+        return;
+    }
+    graph_name += props.sprite;
+    return graph_name;
+}
+
+function create_unit(type, xpos, ypos, player, th)
+{
+    var graph_name;
+    var group;
+    if (player == PLAYER_BLUE) {
+        group = blue_units;
+        graph_name = 'blue_';
+    } else if (player == PLAYER_RED) {
+        group = red_units;
+        graph_name = 'red_';
+    } else {
+        console.error('bad player type');
+        return;
+    }
+    var props = unit_properties.get(type);
+    if (props == null) {
+        console.error('Unknown unit type');
+        return;
+    }
+    graph_name += props.sprite;
+    var health;
+    var is_building = false;
+    new_unit = group.create(xpos, ypos, graph_name);
+    new_unit.x_player = player;
+    new_unit.x_type = type;    
+    new_unit.x_health = props.health;
+    new_unit.x_created = tick_number;
+    new_unit.x_props = props;
+    new_unit.x_last_spawn = -1;
+    new_unit.x_last_shot = 0;
+    if (props.building) {
+        new_unit.setImmovable(true);
+        new_unit.x_health_bar = th.add.rectangle(xpos, ypos-props.width/2, props.width*0.75, 2, 0x00ff00);
+        new_unit.x_health_bar.alpha = 0.25;
+        new_unit.x_health_bar.setDepth(1);
+    } else {
+        new_unit.setGravity(0, 300);
+        new_unit.setBounce(0.2);    
+    }
+    return new_unit;
+}
+
+function create_shot(type, player, xpos, ypos, xvel, yvel, th) {
+    var group;
+    if (player == PLAYER_BLUE) {
+        group = blue_shots;
+    } else if (player == PLAYER_RED) {
+        group = red_shots;
+    } else {
+        console.error('bad player type for shot');
+        return;
+    }
+    var props = shot_properties.get(type);
+    if (props == null) {
+        console.error('Unknown shot type');
+        return;
+    }
+    new_shot = group.create(xpos, ypos, props.sprite);   
+    new_shot.x_player = player;
+    new_shot.x_type = type;
+    new_shot.x_props = props;
+    new_shot.setVelocityX(xvel);
+    new_shot.setVelocityY(yvel);
+    new_shot.setGravity(0, 300);
+}
+        
+// LOGIC //
+///////////
+        
+function run_unit_ai(unit, tick_count, th)
+{
+    // TODO: HAndle this better?
+    if (unit.x_player == 1) {
+        if (unit.x > 800-10) unit.destroy();
+    } else {
+        if (unit.x < 10) unit.destroy();
+    }
+    dir_to_enemy = unit.x_player == 1 ? 1 : -1;
+    var props = unit.x_props;
+    
+    // handle movement and jumps only every 5 th tick so that it's less random
+    if (tick_count % 5 == 0) {
+        if (props.movement != null) {
+            var velx = Math.random()*(props.movement.maxspeed - props.movement.minspeed) + props.movement.minspeed;
+            unit.setVelocityX(dir_to_enemy*velx);
+        }
+        if (props.jump != null) {
+            if (Math.random() < props.jump.prob) {
+                unit.setVelocityY(-props.jump.velocity);
+            }
+        }
+    }
+    
+    // shooting
+    if (props.shoot != null) {
+        var shoot = props.shoot;
+        if (tick_count - unit.x_last_shot > shoot.ticks) {
+            var angle = Math.PI * (Math.random()*(shoot.amax - shoot.amin) + shoot.amin) / 180.0;
+            var velx = Math.cos(angle)*shoot.velocity;
+            var vely = -Math.sin(angle)*shoot.velocity;
+            create_shot(shoot.type, unit.x_player, unit.x, unit.y, dir_to_enemy*velx, vely, th);
+            unit.x_last_shot = tick_count;
+        }
+    }
+
+    // spawn logic
+    if (props.spawn != null) {
+        var spawn = props.spawn;
+        if (tick_count - unit.x_last_spawn > spawn.ticks || unit.x_last_spawn == -1) {
+            create_unit(spawn.type, unit.x, unit.y, unit.x_player, th);
+            unit.x_last_spawn = tick_count;
+        }
+    }
+    
+}
+        
+function unit_hit(unit, shot)
+{
+    var props = shot.x_props;
+    update_unit_health(unit, -props.damage);   
+    destroy_shot(shot, this);
+}
+        
+function shot_hit_ground(shot, tile)
+{
+    destroy_shot(shot, this)
+}
+        
+function destroy_shot(shot, th)
+{
+    // Big shot explosion
+    var props = shot.x_props;
+    if (props.explosion != null) {
+        var explosion = props.explosion;
+        for (i = 0; i < explosion.amount; i++) {
+            velx = (Math.random() - 0.5)*400;
+            vely = -(Math.random())*200;
+            create_shot(explosion.type, shot.x_player, shot.x, shot.y - 5, velx, vely, th);    
+        }
+    }
+    shot.destroy();
+}
+        
+// Updare unit health and potentially a health bar also
+// Kills the unit if health below zero
+function update_unit_health(unit, amount)
+{
+    var props = unit.x_props;
+    unit.x_health += amount;
+    if (unit.x_health > props.health) {
+        unit.x_health = props.health;
+    }
+    if (props.building) {
+        
+        var fraction = unit.x_health / props.health;
+        var new_width = props.width * 0.75 * fraction;
+        if (fraction >= 0.5) {
+            unit.x_health_bar.fillColor = '0x00ff00';
+        } else if (fraction < 0.5 && fraction >= 0.25) {
+            unit.x_health_bar.fillColor = '0xffff00';
+        } else {
+            unit.x_health_bar.fillColor = '0xff0000';
+        }
+        unit.x_health_bar.width = new_width;
+    }
+    if (unit.x_health <= 0) {   
+        unit.destroy();
+        if (unit.x_health_bar != null) {
+            unit.x_health_bar.destroy();
+        }
+        if (unit.x_grid != null) {
+            unit.x_grid.used = false;
+        }
+        // Update victory condition!
+        if (props.victory) {
+           player_lost = unit.x_player;
+        }
+    }
+}
+        
+function check_shot_outside(shot)
+{
+    if (shot.x < 0 || shot.x > 800 || shot.y < 0 || shot.y > 600) {
+        shot.destroy();
+    }            
+}
+        
+function collect_gold(unit, gold)
+{
+    player_data.get(unit.x_player).gold += 100;
+    update_money();
+    gold.destroy();
+}
+        
+function update_money() {
+    ui_money_blue.setText('Blue gold: ' + player_data.get(PLAYER_BLUE).gold);
+    ui_money_red.setText('Red gold: ' + player_data.get(PLAYER_RED).gold);
+}
+        
+    </script>
+
+</body>
+</html>
