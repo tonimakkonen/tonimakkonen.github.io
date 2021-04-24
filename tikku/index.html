@@ -8,6 +8,8 @@
     <script>
 
 // setting up constants
+// TODO: Consider doing a better UI system
+// TODO: Better reset between modes
         
 const PLAYER_BLUE = 1;
 const PLAYER_RED = 2;
@@ -30,6 +32,9 @@ const MODE_BATTLE = 4;
 const MODE_BLUE_WIN = 5;
 const MODE_RED_WIN = 6;
 
+const AI_NONE = 0;
+const AI_NORMAL = 1;
+const AI_DIFFICULT = 2;
     
 // game object properties (some things still hard coded)
         
@@ -53,7 +58,7 @@ unit_properties.set(UNIT_TURRET,
                     {
     building: true, width: 40, sprite: 'turret', health: 40, victory: false,
     help: 'Turret, shoots at enemy units',
-    cost: 350,
+    cost: 250,
     shoot: {type: SHOT_BASIC, ticks: 5, velocity: 300, amin: 10, amax: 50}
                     });
         
@@ -67,7 +72,7 @@ unit_properties.set(UNIT_BARRACKS,
         
 unit_properties.set(UNIT_WALL, 
                     {
-    building: true, width: 40, sprite: 'wall', health: 100, victory: false,
+    building: true, width: 40, sprite: 'wall', health: 150, victory: false,
     help: 'Wall, blocks enemy units and takes a lot of damage',
     cost: 50,
                     });
@@ -83,11 +88,16 @@ unit_properties.set(UNIT_FACTORY,
                     {
     building: true, width: 40, sprite: 'factory', health: 40, victory: false,
     help: 'Factory, spawns artillery',
-    cost: 400,
+    cost: 350,
     spawn: {type: UNIT_CANNON, ticks: 150}
                     });
     
+// All the units that can be bought
 const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY];
+        
+// Specific lists to help AI
+const unit_buy_list_defence = [UNIT_WALL, UNIT_TURRET];
+const unit_buy_list_offence = [UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY];
     
 var shot_properties = new Map();
 shot_properties.set(SHOT_BASIC, {sprite: 'shot', damage: 3, explosion: null});
@@ -117,14 +127,14 @@ var game_grid = [
     {x: 3, y: 8, player: PLAYER_BLUE},
     {x: 1, y: 5, player: PLAYER_BLUE},
     {x: 3, y: 5, player: PLAYER_BLUE},
-    {x: 19-2, y: 12, player: PLAYER_RED},
-    {x: 19-3, y: 12, player: PLAYER_RED},
-    {x: 19-4, y: 12, player: PLAYER_RED},
-    {x: 19-5, y: 12, player: PLAYER_RED},
-    {x: 19-1, y: 8, player: PLAYER_RED},
-    {x: 19-3, y: 8, player: PLAYER_RED},
-    {x: 19-1, y: 5, player: PLAYER_RED},
-    {x: 19-3, y: 5, player: PLAYER_RED}
+    {x: 19-2, y: 12, player: PLAYER_RED, list: unit_buy_list_offence},
+    {x: 19-3, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
+    {x: 19-4, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
+    {x: 19-5, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
+    {x: 19-1, y: 8, player: PLAYER_RED, list: unit_buy_list_offence},
+    {x: 19-3, y: 8, player: PLAYER_RED, list: unit_buy_list_offence},
+    {x: 19-1, y: 5, player: PLAYER_RED, list: unit_buy_list_offence},
+    {x: 19-3, y: 5, player: PLAYER_RED, list: unit_buy_list_offence}
 ]
 // automatic grid updates
 for (i = 0; i < game_grid.length; i++) {
@@ -154,8 +164,8 @@ var config = {
 
 var game = new Phaser.Game(config);
         
-var game_mode
-        
+var game_mode;
+var game_ai;
 
 var blue_units;
 var blue_shots;
@@ -251,7 +261,7 @@ function create ()
     this.physics.add.overlap(red_shots, platforms, shot_hit_ground, null, this);
     
     // GUI
-    mode_text = this.add.text(20, 600-25, 'Tikku battle! Press here to start a vs game.', { fontFamily: 'Courier' }).setColor('#FFFFFF');
+    mode_text = this.add.text(20, 600-25, '', { fontFamily: 'Courier' }).setColor('#FFFFFF');
     mode_text.setDepth(10);
     ui_money_blue = this.add.text(20, 600-65, '', { fontFamily: 'Courier' }).setColor('#FFFFFF');
     ui_money_blue.setDepth(10);
@@ -261,16 +271,27 @@ function create ()
     move_to_mode(MODE_SETUP, true, this);
 }
 
-function update ()
+function update()
 {
     // TODO: Handle clicks better
     var mouse_down = game.input.mousePointer.isDown;
     var click_now = mouse_down && !input_last;
     input_last = mouse_down;
     
+    cur_time = this.time.now;
+    
     if (mode_current == MODE_SETUP) {
-        if (click_now && game.input.mousePointer.y >= 560) {
-            move_to_mode(MODE_BLUE, false, this);
+        if (click_now) {
+            if (game.input.mousePointer.y < 30) { // vs game
+                game_ai = AI_NONE;
+                move_to_mode(MODE_BLUE, false, this); 
+            } else if (game.input.mousePointer.y < 60) { // 
+                game_ai = AI_NORMAL;
+                move_to_mode(MODE_BLUE, false, this); 
+            } else if (game.input.mousePointer.y < 90) {
+                game_ai = AI_DIFFICULT;
+                move_to_mode(MODE_BLUE, false, this); 
+            }
         }
     } else if (mode_current == MODE_BLUE) {
         if (click_now && game.input.mousePointer.y >= 560) {
@@ -281,12 +302,31 @@ function update ()
             else check_buy(PLAYER_BLUE, this);
         }
     } else if (mode_current == MODE_RED) {
-        if (click_now && game.input.mousePointer.y >= 560) {
-            move_to_mode(MODE_BATTLE, false, this);
-        }
-        if (click_now) {
-            if (ui_grid_selected == null) check_grid_buy(PLAYER_RED, this);
-            else check_buy(PLAYER_RED, this);
+        if (game_ai == AI_NONE) {
+            if (click_now && game.input.mousePointer.y >= 560) {
+                move_to_mode(MODE_BATTLE, false, this);
+            }
+            if (click_now) {
+                if (ui_grid_selected == null) check_grid_buy(PLAYER_RED, this);
+                else check_buy(PLAYER_RED, this);
+            }    
+        } else {
+            // handle AI buying
+            
+            
+            // TODO: Refactor buying and selling AI, currently we just buy max 3 times
+            for (i = 0; i < 3; i++) {
+                free_grid = pick_random_unused_grid(PLAYER_RED);
+                if (free_grid != null) {
+                    unit = pick_random_from_list(free_grid.list, player_data.get(PLAYER_RED).gold);
+                    if (unit != null) {
+                        perform_buy(PLAYER_RED, unit, free_grid, this);       
+                    }
+                }
+            }
+            
+            
+            move_to_mode(MODE_BATTLE, false, this); 
         }
     } else if (mode_current == MODE_BATTLE) {
         
@@ -296,12 +336,17 @@ function update ()
             move_to_mode(MODE_BLUE_WIN, false, this);
         } else if (mode_timer <= 0) {
             // add money to players
-            player_data.get(PLAYER_BLUE).gold += 100;
-            player_data.get(PLAYER_RED).gold += 100;
+            player_data.get(PLAYER_BLUE).gold += 200;
+            if (game_ai == AI_DIFFICULT) {
+                player_data.get(PLAYER_RED).gold += 400;    
+            } else {
+                player_data.get(PLAYER_RED).gold += 200;
+            }
+            
             update_money();
             move_to_mode(MODE_BLUE, false, this);
         } else {
-            cur_time = this.time.now;
+            
             if (cur_time - last_tick > tick_millis) {
                 last_tick = cur_time;
                 blue_units.children.each(function(unit) { run_unit_ai(unit, tick_number, this) }, this);
@@ -329,12 +374,40 @@ function update ()
         }
     }
 }
+        
+// AI buying functionalitues
+        
+// Pick random unused grid, can be null if no free grid found
+function pick_random_unused_grid(player) {
+    // TODO: Refactor this, please... this is garbage
+    for (i = 0; i < 40; i++) {
+        var index = Math.floor(Math.random() * game_grid.length);
+        if (index >= game_grid.length) index = game_grid.length - 1;
+        if (game_grid[index].player == player && game_grid[index].used == false) {
+            return game_grid[index];
+        }
+    }
+    return null;
+}
+
+// Pick random thing from list that you can afford to buy
+function pick_random_from_list(list, gold) {
+    // TODO: refactor this
+    for (i = 0; i < 10; i++) {
+        var index = Math.floor(Math.random() * list.length);
+        if (index >= list.length) index = list.length - 1;
+        var unit = list[index];
+        if (unit_properties.get(unit).cost <= gold) {
+            return unit;
+        }
+    }
+    return null;
+}
 
 // Grid and buy functionality
         
 // Check if we press on a grid in the buy phase, if so create buy menu
 function check_grid_buy(player, th) {
-    console.log('grid buy');
     var mx = game.input.mousePointer.x;
     var my = game.input.mousePointer.y;
     for (i = 0; i < game_grid.length; i++) {
@@ -380,7 +453,6 @@ function check_grid_buy(player, th) {
 }
         
 function check_buy(player, th) {
-    console.log('list buy');
     if (ui_grid_selected.used) {
         // about to sell
         if (game.input.mousePointer.y <= 30) {
@@ -401,12 +473,7 @@ function check_buy(player, th) {
                 if (cost > player_data.get(player).gold) {
                     return;
                 }
-                player_data.get(player).gold -= cost;
-                update_money();
-                new_unit = create_unit(unit_buy_list[i], ui_grid_selected.x*40 + 20, ui_grid_selected.y*40 + 20, player, th);
-                new_unit.x_grid = ui_grid_selected;
-                ui_grid_selected.used = true;
-                ui_grid_selected.building = new_unit;
+                perform_buy(player, unit_buy_list[i], ui_grid_selected, th);
                 ui_grid_selected.x_image.destroy();
                 ui_grid_selected.x_image = null;
                 ui_grid_selected = null;
@@ -421,6 +488,22 @@ function check_buy(player, th) {
     for(i = 0; i < ui_list.length; i++) ui_list[i].destroy();
     ui_list = [];
 }
+        
+// Perform buy function on a grid
+// Does not reset UI graphics
+// Checks that the buy can be performed
+function perform_buy(player, unit, grid, th) {
+    if (grid.used == true) {
+        console.error('Grid already used: ' + grid);
+        return;
+    }
+    player_data.get(player).gold -= unit_properties.get(unit).cost;
+    update_money();
+    new_unit = create_unit(unit, grid.x*40 + 20, grid.y*40 + 20, player, th);
+    new_unit.x_grid = grid;
+    grid.used = true;
+    grid.building = new_unit;
+}
 
 function update_grid(player, th) {
     for (i = 0; i < game_grid.length; i++) {
@@ -434,6 +517,18 @@ function update_grid(player, th) {
                 grid.x_image = null;
             }
         }
+    }
+}
+
+function reset_grid(th) {
+    for (i = 0; i < game_grid.length; i++) {
+        grid = game_grid[i];
+        if (grid.x_image != null) {
+            grid.x_image.destroy();
+            grid.x_image = null;
+        }
+        grid.used = false;
+        grid.building = null;
     }
 }
  
@@ -458,14 +553,20 @@ function move_to_mode(mode, kill_all, th) {
         mode_text.setText('Blue buy phase. Press here when done.');
         update_grid(PLAYER_BLUE, th);    
     } else if (mode_current == MODE_RED) {
-        mode_text.setText('Red buy phase. Press here when done.');
-        update_grid(PLAYER_RED, th);
-    } else {
+        if (game_ai == AI_NONE) {
+            mode_text.setText('Red buy phase. Press here when done.');
+            update_grid(PLAYER_RED, th);    
+        } else {
+            mode_text.setText('Red buy phase.');
+            update_grid(-1, th); // TODO: Better grid reset
+        }
+    } else if (mode == MODE_BATTLE) {
         update_grid(-1, th);
+    } else {
+        reset_grid(th);
     }
     if (mode_current == MODE_BATTLE) {
         mode_timer = 600; // 60 seconds
-    
         // text is updated in battle phase
     }
     if (mode_current == MODE_BLUE_WIN) {
@@ -481,15 +582,28 @@ function move_to_mode(mode, kill_all, th) {
         player_data.get(PLAYER_BLUE).gold = 150;
         player_data.get(PLAYER_RED).gold = 150;
         update_money();
+        mode_text.setText('Tikku battle!');
+        
+        // Set up selection UI (things in UI list are destroyed)
+        ui_bg = th.add.rectangle(400, 30*3/2, 800, 30*3, 0x000000);
+        ui_bg.alpha = 0.5;
+        ui_list.push(ui_bg);
+        ui_list.push(th.add.text(45, 0+10, 'Start a new vs game', { fontFamily: 'Courier' }).setColor('#FFFFFF'));
+        ui_list.push(th.add.text(45, 30+10, 'Start a game vs computer (normal)', { fontFamily: 'Courier' }).setColor('#FFFFFF'));
+        ui_list.push(th.add.text(45, 60+10, 'Start a game vs computer (difficult)', { fontFamily: 'Courier' }).setColor('#FFFFFF'));
     }
 }
         
     
+// TODO: This is not very well made
 function reset_unit(unit, kill_all, th) {
     unit.x_last_spawn = -1;
     unit.x_last_shoot = 0;
     if (!unit.x_props.building || kill_all) {
         unit.destroy();
+        if (unit.x_health_bar !== undefined) {
+            unit.x_health_bar.destroy();
+        }
     }
 }
 
@@ -582,6 +696,7 @@ function create_shot(type, player, xpos, ypos, xvel, yvel, th) {
     new_shot.setGravity(0, 300);
 }
         
+///////////
 // LOGIC //
 ///////////
         
@@ -709,9 +824,9 @@ function check_shot_outside(shot)
         
 function collect_gold(unit, gold)
 {
-    player_data.get(unit.x_player).gold += 100;
-    update_money();
+    player_data.get(unit.x_player).gold += 50;
     gold.destroy();
+    update_money();
 }
         
 function update_money() {
