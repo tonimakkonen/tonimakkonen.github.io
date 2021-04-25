@@ -2,14 +2,23 @@
 <html>
 <head>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        .center {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        </style>
 </head>
 <body>
-
+    
+    <div id = "gamediv" class = "center">
     <script>
 
 // setting up constants
 // TODO: Consider doing a better UI system
 // TODO: Better reset between modes
+// TODO: Better AI
         
 const PLAYER_BLUE = 1;
 const PLAYER_RED = 2;
@@ -21,6 +30,8 @@ const UNIT_BARRACKS = 4;
 const UNIT_WALL = 5;
 const UNIT_CANNON = 6;
 const UNIT_FACTORY = 7;
+const UNIT_AIRFIELD = 8;
+const UNIT_BOMBER = 9;
 
 const SHOT_BASIC = 1;
 const SHOT_EXPLOSIVE = 2;
@@ -58,7 +69,7 @@ unit_properties.set(UNIT_TURRET,
                     {
     building: true, width: 40, sprite: 'turret', health: 40, victory: false,
     help: 'Turret, shoots at enemy units',
-    cost: 250,
+    cost: 200,
     shoot: {type: SHOT_BASIC, ticks: 5, velocity: 300, amin: 10, amax: 50}
                     });
         
@@ -66,8 +77,8 @@ unit_properties.set(UNIT_BARRACKS,
                     {
     building: true, width: 40, sprite: 'barracks', health: 40, victory: false,
     help: 'Barracks, spawns soldiers',
-    cost: 100,
-    spawn: {type: UNIT_SOLDIER, ticks: 75}
+    cost: 150,
+    spawn: {type: UNIT_SOLDIER, ticks: 100}
                     });
         
 unit_properties.set(UNIT_WALL, 
@@ -81,7 +92,7 @@ unit_properties.set(UNIT_CANNON,
                     {
     building: false, sprite: 'cannon', health: 20, victory: false,
     movement: {minspeed: 25, maxspeed: 25},
-    shoot: {type: SHOT_EXPLOSIVE, ticks: 20, velocity: 300, amin: 30, amax: 50}
+    shoot: {type: SHOT_EXPLOSIVE, ticks: 25, velocity: 300, amin: 30, amax: 50}
                     });
         
 unit_properties.set(UNIT_FACTORY, 
@@ -91,17 +102,33 @@ unit_properties.set(UNIT_FACTORY,
     cost: 350,
     spawn: {type: UNIT_CANNON, ticks: 150}
                     });
+        
+unit_properties.set(UNIT_AIRFIELD, 
+                    {
+    building: true, width: 40, sprite: 'airfield', health: 40, victory: false,
+    help: 'Air field, spawns bombers',
+    cost: 350,
+    spawn: {type: UNIT_BOMBER, ticks: 200}
+                    });
+        
+unit_properties.set(UNIT_BOMBER, 
+                    {
+    building: false, sprite: 'bomber', health: 8, victory: false,
+    movement: {minspeed: 40, maxspeed: 40},
+    flight: true,
+    shoot: {type: SHOT_EXPLOSIVE, ticks: 10, velocity: 0, amin: 0, amax: 0}
+                    });
     
 // All the units that can be bought
-const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY];
+const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD];
         
 // Specific lists to help AI
 const unit_buy_list_defence = [UNIT_WALL, UNIT_TURRET];
-const unit_buy_list_offence = [UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY];
+const unit_buy_list_offence = [UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD];
     
 var shot_properties = new Map();
 shot_properties.set(SHOT_BASIC, {sprite: 'shot', damage: 3, explosion: null});
-shot_properties.set(SHOT_EXPLOSIVE, {sprite: 'big_shot', damage: 5, explosion: {type: SHOT_BASIC, amount: 5}});
+shot_properties.set(SHOT_EXPLOSIVE, {sprite: 'big_shot', damage: 8, explosion: {type: SHOT_BASIC, amount: 5}});
         
 // timing system and mode system
         
@@ -123,21 +150,27 @@ var game_grid = [
     {x: 3, y: 12, player: PLAYER_BLUE},
     {x: 4, y: 12, player: PLAYER_BLUE},
     {x: 5, y: 12, player: PLAYER_BLUE},
+    {x: 0, y: 8, player: PLAYER_BLUE},
     {x: 1, y: 8, player: PLAYER_BLUE},
+    {x: 2, y: 8, player: PLAYER_BLUE},
     {x: 3, y: 8, player: PLAYER_BLUE},
+    {x: 0, y: 5, player: PLAYER_BLUE},
     {x: 1, y: 5, player: PLAYER_BLUE},
-    {x: 3, y: 5, player: PLAYER_BLUE},
-    {x: 19-2, y: 12, player: PLAYER_RED, list: unit_buy_list_offence},
-    {x: 19-3, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
-    {x: 19-4, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
-    {x: 19-5, y: 12, player: PLAYER_RED, list: unit_buy_list_defence},
-    {x: 19-1, y: 8, player: PLAYER_RED, list: unit_buy_list_offence},
-    {x: 19-3, y: 8, player: PLAYER_RED, list: unit_buy_list_offence},
-    {x: 19-1, y: 5, player: PLAYER_RED, list: unit_buy_list_offence},
-    {x: 19-3, y: 5, player: PLAYER_RED, list: unit_buy_list_offence}
+    {x: 2, y: 5, player: PLAYER_BLUE},
+    {x: 19-2, y: 12, player: PLAYER_RED, ai_list: unit_buy_list_offence},
+    {x: 19-3, y: 12, player: PLAYER_RED, ai_list: unit_buy_list_defence},
+    {x: 19-4, y: 12, player: PLAYER_RED, ai_list: unit_buy_list_defence},
+    {x: 19-5, y: 12, player: PLAYER_RED, ai_list: [UNIT_WALL]},
+    {x: 19-0, y: 8, player: PLAYER_RED, ai_list: [UNIT_FACTORY]},
+    {x: 19-1, y: 8, player: PLAYER_RED, ai_list: unit_buy_list_offence},
+    {x: 19-2, y: 8, player: PLAYER_RED, ai_list: unit_buy_list_offence},
+    {x: 19-3, y: 8, player: PLAYER_RED, ai_list: unit_buy_list_offence},
+    {x: 19-0, y: 5, player: PLAYER_RED, ai_list: [UNIT_AIRFIELD]},
+    {x: 19-1, y: 5, player: PLAYER_RED, ai_list: unit_buy_list_offence},
+    {x: 19-2, y: 5, player: PLAYER_RED, ai_list: [UNIT_BARRACKS]}
 ]
 // automatic grid updates
-for (i = 0; i < game_grid.length; i++) {
+for (var i = 0; i < game_grid.length; i++) {
     game_grid[i].used = false;
     game_grid[i].building = null;
 }
@@ -148,7 +181,7 @@ var config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    parent: 'phaser-example',
+    parent: 'gamediv',
     physics: {
         default: 'arcade',
         arcade: {
@@ -209,6 +242,10 @@ function preload ()
     this.load.image('red_wall', 'red_wall.png');
     this.load.image('blue_factory', 'blue_factory.png');
     this.load.image('red_factory', 'red_factory.png');
+    this.load.image('blue_airfield', 'blue_airfield.png');
+    this.load.image('red_airfield', 'red_airfield.png');
+    this.load.image('blue_bomber', 'blue_bomber.png');
+    this.load.image('red_bomber', 'red_bomber.png');
     
     // shots
     this.load.image('shot', 'shot.png');
@@ -228,7 +265,7 @@ function create ()
     platforms = this.physics.add.staticGroup();
     // ground
     for (var i = 0; i < 20; i++) platforms.create(i*40 + 20, 600-20-40, 'tile');
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
         platforms.create(i*40 + 20, 600-20-200, 'tile');
         platforms.create(800 - (i*40 + 20), 600-20-200, 'tile');
     }
@@ -313,12 +350,11 @@ function update()
         } else {
             // handle AI buying
             
-            
-            // TODO: Refactor buying and selling AI, currently we just buy max 3 times
-            for (i = 0; i < 3; i++) {
+            // TODO: Refactor buy AI?
+            for (var i = 0; i < 4; i++) {
                 free_grid = pick_random_unused_grid(PLAYER_RED);
                 if (free_grid != null) {
-                    unit = pick_random_from_list(free_grid.list, player_data.get(PLAYER_RED).gold);
+                    unit = pick_random_from_list(free_grid.ai_list, player_data.get(PLAYER_RED).gold);
                     if (unit != null) {
                         perform_buy(PLAYER_RED, unit, free_grid, this);       
                     }
@@ -380,7 +416,7 @@ function update()
 // Pick random unused grid, can be null if no free grid found
 function pick_random_unused_grid(player) {
     // TODO: Refactor this, please... this is garbage
-    for (i = 0; i < 40; i++) {
+    for (var i = 0; i < 40; i++) {
         var index = Math.floor(Math.random() * game_grid.length);
         if (index >= game_grid.length) index = game_grid.length - 1;
         if (game_grid[index].player == player && game_grid[index].used == false) {
@@ -390,18 +426,18 @@ function pick_random_unused_grid(player) {
     return null;
 }
 
-// Pick random thing from list that you can afford to buy
+// Pick random thing from list that you can afford to buy or null
+// This method is intended for the AI to save money occasionally
 function pick_random_from_list(list, gold) {
     // TODO: refactor this
-    for (i = 0; i < 10; i++) {
-        var index = Math.floor(Math.random() * list.length);
-        if (index >= list.length) index = list.length - 1;
-        var unit = list[index];
-        if (unit_properties.get(unit).cost <= gold) {
-            return unit;
-        }
+    var index = Math.floor(Math.random() * list.length);
+    if (index >= list.length) index = list.length - 1;
+    var unit = list[index];
+    if (unit_properties.get(unit).cost <= gold) {
+        return unit;
+    } else {
+        return null;
     }
-    return null;
 }
 
 // Grid and buy functionality
@@ -410,7 +446,7 @@ function pick_random_from_list(list, gold) {
 function check_grid_buy(player, th) {
     var mx = game.input.mousePointer.x;
     var my = game.input.mousePointer.y;
-    for (i = 0; i < game_grid.length; i++) {
+    for (var i = 0; i < game_grid.length; i++) {
         grid = game_grid[i];
         if (grid.player == player) {
             var x = grid.x*40 + 20;
@@ -433,7 +469,7 @@ function check_grid_buy(player, th) {
                     ui_buy_bg = th.add.rectangle(400, height / 2, 800, height, 0x000000);
                     ui_buy_bg.alpha = 0.5;
                     ui_list.push(ui_buy_bg);
-                    for (j = 0; j < unit_buy_list.length; j++) {
+                    for (var j = 0; j < unit_buy_list.length; j++) {
                         cost = unit_properties.get(unit_buy_list[j]).cost;
                         var too_expensive = cost > player_data.get(player).gold;
                         im = th.add.image(15, 30*j + 15, get_unit_graph_name(player, unit_buy_list[j]));
@@ -467,7 +503,7 @@ function check_buy(player, th) {
         }
     } else {
         // about to buy
-        for (i = 0; i < unit_buy_list.length; i++) {
+        for (var i = 0; i < unit_buy_list.length; i++) {
             if (game.input.mousePointer.y >= i*30 && game.input.mousePointer.y < i*30 + 30) {
                 cost = unit_properties.get(unit_buy_list[i]).cost;
                 if (cost > player_data.get(player).gold) {
@@ -506,7 +542,7 @@ function perform_buy(player, unit, grid, th) {
 }
 
 function update_grid(player, th) {
-    for (i = 0; i < game_grid.length; i++) {
+    for (var i = 0; i < game_grid.length; i++) {
         grid = game_grid[i];
         if (grid.player == player && !grid.used) {
             grid.x_image = th.add.image(grid.x*40 + 20, grid.y*40 + 20, 'grid');
@@ -521,7 +557,7 @@ function update_grid(player, th) {
 }
 
 function reset_grid(th) {
-    for (i = 0; i < game_grid.length; i++) {
+    for (var i = 0; i < game_grid.length; i++) {
         grid = game_grid[i];
         if (grid.x_image != null) {
             grid.x_image.destroy();
@@ -579,8 +615,8 @@ function move_to_mode(mode, kill_all, th) {
         // reset all and create player bases
         create_unit(UNIT_BASE, 40, 600-120, PLAYER_BLUE, th);
         create_unit(UNIT_BASE, 800 - 40, 600-120, PLAYER_RED, th);
-        player_data.get(PLAYER_BLUE).gold = 150;
-        player_data.get(PLAYER_RED).gold = 150;
+        player_data.get(PLAYER_BLUE).gold = 200;
+        player_data.get(PLAYER_RED).gold = 200;
         update_money();
         mode_text.setText('Tikku battle!');
         
@@ -598,7 +634,7 @@ function move_to_mode(mode, kill_all, th) {
 // TODO: This is not very well made
 function reset_unit(unit, kill_all, th) {
     unit.x_last_spawn = -1;
-    unit.x_last_shoot = 0;
+    unit.x_last_shot = 0;
     if (!unit.x_props.building || kill_all) {
         unit.destroy();
         if (unit.x_health_bar !== undefined) {
@@ -666,8 +702,11 @@ function create_unit(type, xpos, ypos, player, th)
         new_unit.x_health_bar.alpha = 0.25;
         new_unit.x_health_bar.setDepth(1);
     } else {
-        new_unit.setGravity(0, 300);
-        new_unit.setBounce(0.2);    
+        if (props.flight) {
+        } else {
+            new_unit.setGravity(0, 300);    
+            new_unit.setBounce(0.2);    
+        }
     }
     return new_unit;
 }
@@ -702,12 +741,19 @@ function create_shot(type, player, xpos, ypos, xvel, yvel, th) {
         
 function run_unit_ai(unit, tick_count, th)
 {
-    // TODO: HAndle this better?
+    // Kill units over the border
     if (unit.x_player == 1) {
-        if (unit.x > 800-10) unit.destroy();
+        if (unit.x > 800-10) {
+            unit.destroy();
+            return;
+        }
     } else {
-        if (unit.x < 10) unit.destroy();
+        if (unit.x < 10) {
+            unit.destroy();
+            return;
+        }
     }
+    
     dir_to_enemy = unit.x_player == 1 ? 1 : -1;
     var props = unit.x_props;
     
@@ -745,6 +791,20 @@ function run_unit_ai(unit, tick_count, th)
         }
     }
     
+    // flight logic (needs to be improved)
+    if (props.flight == true) {
+        if (unit.y < 60) {
+            unit.setVelocityY(20);
+        }
+        else if(unit.y < 120) {
+            if (Math.random() < 0.1) {
+                unit.setVelocityY(Math.random()*40 - 20);
+            }
+        } else {
+            unit.setVelocityY(-20);
+        }
+    }
+    
 }
         
 function unit_hit(unit, shot)
@@ -765,7 +825,7 @@ function destroy_shot(shot, th)
     var props = shot.x_props;
     if (props.explosion != null) {
         var explosion = props.explosion;
-        for (i = 0; i < explosion.amount; i++) {
+        for (var i = 0; i < explosion.amount; i++) {
             velx = (Math.random() - 0.5)*400;
             vely = -(Math.random())*200;
             create_shot(explosion.type, shot.x_player, shot.x, shot.y - 5, velx, vely, th);    
@@ -834,7 +894,8 @@ function update_money() {
     ui_money_red.setText('Red gold: ' + player_data.get(PLAYER_RED).gold);
 }
         
-    </script>
-
+    </script> 
+    </div>
+        
 </body>
 </html>
