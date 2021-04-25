@@ -32,6 +32,8 @@ const UNIT_CANNON = 6;
 const UNIT_FACTORY = 7;
 const UNIT_AIRFIELD = 8;
 const UNIT_BOMBER = 9;
+const UNIT_HELIPAD = 10;
+const UNIT_HELICOPTER = 11;
 
 const SHOT_BASIC = 1;
 const SHOT_EXPLOSIVE = 2;
@@ -62,7 +64,7 @@ unit_properties.set(UNIT_SOLDIER,
 unit_properties.set(UNIT_BASE, 
                     {
     building: true, width: 80, sprite: 'base', health: 200, victory: true,
-    spawn: {type: UNIT_SOLDIER, ticks: 50}
+    spawn: {type: UNIT_SOLDIER, ticks: 75}
                     });
         
 unit_properties.set(UNIT_TURRET, 
@@ -78,7 +80,7 @@ unit_properties.set(UNIT_BARRACKS,
     building: true, width: 40, sprite: 'barracks', health: 40, victory: false,
     help: 'Barracks, spawns soldiers',
     cost: 150,
-    spawn: {type: UNIT_SOLDIER, ticks: 100}
+    spawn: {type: UNIT_SOLDIER, ticks: 125}
                     });
         
 unit_properties.set(UNIT_WALL, 
@@ -100,7 +102,7 @@ unit_properties.set(UNIT_FACTORY,
     building: true, width: 40, sprite: 'factory', health: 40, victory: false,
     help: 'Factory, spawns artillery',
     cost: 350,
-    spawn: {type: UNIT_CANNON, ticks: 150}
+    spawn: {type: UNIT_CANNON, ticks: 175}
                     });
         
 unit_properties.set(UNIT_AIRFIELD, 
@@ -108,7 +110,7 @@ unit_properties.set(UNIT_AIRFIELD,
     building: true, width: 40, sprite: 'airfield', health: 40, victory: false,
     help: 'Air field, spawns bombers',
     cost: 350,
-    spawn: {type: UNIT_BOMBER, ticks: 200}
+    spawn: {type: UNIT_BOMBER, ticks: 225}
                     });
         
 unit_properties.set(UNIT_BOMBER, 
@@ -118,13 +120,30 @@ unit_properties.set(UNIT_BOMBER,
     flight: true,
     shoot: {type: SHOT_EXPLOSIVE, ticks: 10, velocity: 0, amin: 0, amax: 0}
                     });
+        
+unit_properties.set(UNIT_HELIPAD, 
+                    {
+    building: true, width: 40, sprite: 'helipad', health: 40, victory: false,
+    help: 'Helicopter base, spawns helicopters transporting units',
+    cost: 400,
+    spawn: {type: UNIT_HELICOPTER, ticks: 250}
+                    });
+        
+unit_properties.set(UNIT_HELICOPTER, 
+                    {
+    building: false, sprite: 'helicopter', health: 15, victory: false,
+    movement: {minspeed: 30, maxspeed: 30},
+    flight: true,
+    shoot: {type: SHOT_BASIC, ticks: 25, velocity: 300, amin: -30, amax: 30},
+    spawn: {type: UNIT_SOLDIER, ticks: 70}
+                    });
     
 // All the units that can be bought
-const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD];
+const unit_buy_list = [UNIT_WALL, UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD, UNIT_HELIPAD];
         
 // Specific lists to help AI
 const unit_buy_list_defence = [UNIT_WALL, UNIT_TURRET];
-const unit_buy_list_offence = [UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD];
+const unit_buy_list_offence = [UNIT_BARRACKS, UNIT_TURRET, UNIT_FACTORY, UNIT_AIRFIELD, UNIT_HELIPAD];
     
 var shot_properties = new Map();
 shot_properties.set(SHOT_BASIC, {sprite: 'shot', damage: 3, explosion: null});
@@ -166,8 +185,8 @@ var game_grid = [
     {x: 19-2, y: 8, player: PLAYER_RED, ai_list: unit_buy_list_offence},
     {x: 19-3, y: 8, player: PLAYER_RED, ai_list: unit_buy_list_offence},
     {x: 19-0, y: 5, player: PLAYER_RED, ai_list: [UNIT_AIRFIELD]},
-    {x: 19-1, y: 5, player: PLAYER_RED, ai_list: unit_buy_list_offence},
-    {x: 19-2, y: 5, player: PLAYER_RED, ai_list: [UNIT_BARRACKS]}
+    {x: 19-1, y: 5, player: PLAYER_RED, ai_list: [UNIT_HELIPAD]},
+    {x: 19-2, y: 5, player: PLAYER_RED, ai_list: [UNIT_BARRACKS, UNIT_TURRET]}
 ]
 // automatic grid updates
 for (var i = 0; i < game_grid.length; i++) {
@@ -246,6 +265,10 @@ function preload ()
     this.load.image('red_airfield', 'red_airfield.png');
     this.load.image('blue_bomber', 'blue_bomber.png');
     this.load.image('red_bomber', 'red_bomber.png');
+    this.load.image('blue_helipad', 'blue_helipad.png');
+    this.load.image('red_helipad', 'red_helipad.png');
+    this.load.image('blue_helicopter', 'blue_helicopter.png');
+    this.load.image('red_helicopter', 'red_helicopter.png');
     
     // shots
     this.load.image('shot', 'shot.png');
@@ -374,7 +397,7 @@ function update()
             // add money to players
             player_data.get(PLAYER_BLUE).gold += 200;
             if (game_ai == AI_DIFFICULT) {
-                player_data.get(PLAYER_RED).gold += 400;    
+                player_data.get(PLAYER_RED).gold += 300;    
             } else {
                 player_data.get(PLAYER_RED).gold += 200;
             }
@@ -615,8 +638,8 @@ function move_to_mode(mode, kill_all, th) {
         // reset all and create player bases
         create_unit(UNIT_BASE, 40, 600-120, PLAYER_BLUE, th);
         create_unit(UNIT_BASE, 800 - 40, 600-120, PLAYER_RED, th);
-        player_data.get(PLAYER_BLUE).gold = 200;
-        player_data.get(PLAYER_RED).gold = 200;
+        player_data.get(PLAYER_BLUE).gold = 250;
+        player_data.get(PLAYER_RED).gold = 250;
         update_money();
         mode_text.setText('Tikku battle!');
         
