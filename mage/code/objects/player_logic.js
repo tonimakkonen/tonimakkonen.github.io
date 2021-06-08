@@ -32,7 +32,7 @@ function playerHandleLogic(game, curTime) {
   var grav = 400;
 
   if (jump && tdown) {
-    player.setVelocityY(vy-240);
+    player.setVelocityY(-240);
   }
   if (jump) {
     if (vy < -120) {

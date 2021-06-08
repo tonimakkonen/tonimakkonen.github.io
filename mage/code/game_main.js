@@ -19,8 +19,8 @@ var config = {
     update: update
   },
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.NONE,
+    autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
     parent: 'gamediv',
     width: settingWidth,
     height: settingHeight
