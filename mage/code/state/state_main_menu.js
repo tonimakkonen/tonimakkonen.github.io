@@ -1,0 +1,4 @@
+
+function stateHandleMainMenu(game, curTime) {
+  
+}

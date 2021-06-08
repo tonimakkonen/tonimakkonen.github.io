@@ -1,0 +1,4 @@
+
+function stateHandleEditor(game, curTime) {
+
+}
