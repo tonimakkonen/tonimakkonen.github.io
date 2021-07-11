@@ -32,7 +32,7 @@ function playerHandleLogic(game, curTime) {
   var grav = 400;
 
   if (jump && tdown) {
-    player.setVelocityY(-240);
+    player.setVelocityY(-250);
   }
   if (jump) {
     if (vy < -120) {
@@ -54,7 +54,7 @@ function playerHandleLogic(game, curTime) {
 
   // Shoot (move elsewhere)
   if (game.input.activePointer.leftButtonDown() && curTime - lastShot > 250) {
-    shotShoot(game, true, SHOT_ICE, player.x, player.y, dx, dy);
+    shotShoot(game, true, SHOT_FIRE, player.x, player.y, dx, dy);
     lastShot = curTime;
   }
 

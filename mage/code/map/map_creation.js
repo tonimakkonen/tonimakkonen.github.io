@@ -1,54 +1,16 @@
 
 "use strict";
 
-// Create a dummy map
-function mapCreateDummy() {
-  var mapY = 18;
-  var mapX = 80*3 - 2;
-  var tiles = new Array(mapX*mapY).fill(0);
-
-  // floor
-  for (var i = 0; i < mapX; i++) {
-    py = mapY - 1;
-    tiles[i + py*mapX] = 1;
-  }
-
-  // Add seed tiles
-  for (var i = 0; i < 150; i++) {
-    var px = Math.floor(Math.random()*mapX);
-    var py = Math.floor(Math.random()*(mapY - 7) + 8);
-    tiles[px + py*mapX] = 1;
-  }
-
-  // vertical tiles
-  var count = 0;
-  for (var i = 0; i < 10000; i++) {
-    var px = Math.floor(Math.random()*mapX);
-    var py = Math.floor(Math.random()*mapY);
-    const ot = (py > 0) && tiles[px + (py-1)*mapX] == 1;
-    const ob = (py < mapX-1) && tiles[px + (py+1)*mapX] == 1;
-    if (ot || ob) {
-      tiles[px + py*mapX] = 1;
-      count += 1;
-      if (count > 400) break;
-    }
-  }
-  // and horizontal
-  count = 0;
-  for (var i = 0; i < 10000; i++) {
-    var px = Math.floor(Math.random()*mapX);
-    var py = Math.floor(Math.random()*mapY);
-    const ol = (px > 0) && tiles[px - 1 + py*mapX] == 1;
-    const or = (px < mapX-1) && tiles[px + 1 + py*mapX] == 1;
-    if (ol || or) {
-      tiles[px + py*mapX] = 1;
-      count += 1;
-      if (count > 1600) break;
-    }
-  }
-
-  return { tiles: tiles, x: mapX, y: mapY}
-
+function mapCreateEmpty(x, y) {
+  return {
+    x: x,
+    y: y,
+    tiles: new Array(x*y).fill(0),
+    enemies: new Array(x*y).fill(0),
+    pickups: new Array(x*y).fill(0),
+    playerStartX: 0,
+    playerStartY: 0
+  };
 }
 
 // Create all the map objects
@@ -59,103 +21,44 @@ function mapInitialize(game, map) {
 
   var bg = game.add.image(settingWidth/2, settingHeight/2, 'bg0');
   bg.setScrollFactor(0.0, 0.0);
+  bg.setDepth(-10.0);
 
-  var bg2 = game.add.image(settingWidth/2, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  bg2.setScrollFactor(0.15, 0.15);
-  bg2 = game.add.image(settingWidth*1.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  bg2.setScrollFactor(0.15, 0.15);
-  bg2 = game.add.image(settingWidth*2.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  bg2.setScrollFactor(0.15, 0.15);
+  //var bg2 = game.add.image(settingWidth/2, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
+  //bg2.setScrollFactor(0.15, 0.15);
+  //bg2 = game.add.image(settingWidth*1.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
+  //bg2.setScrollFactor(0.15, 0.15);
+  //bg2 = game.add.image(settingWidth*2.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
+  //bg2.setScrollFactor(0.15, 0.15);
 
-  // Add Blocks
+  // Add Tiles
+  var dummy = [];
   for (var px = 0; px < map.x; px++) {
     for (var py = 0; py < map.y; py++) {
-      if (map.tiles[px+py*map.x] == 1) {
-        const onLeft = px == 0 || map.tiles[(px-1)+py*map.x] == 1;
-        const onRight = px == map.x -1 || map.tiles[(px+1)+py*map.x] == 1;
-        const onTop = py == 0 || map.tiles[px+(py-1)*map.x] == 1;
-        const onBottom = py == map.y - 1 || map.tiles[px+(py+1)*map.x] == 1;
-        const cx = px*80 + 40;
-        const cy = py*80 + 40;
-        const dx = 20;
-        const dy = 20;
-        // top left part
-        if (onLeft) {
-          game.add.sprite(cx - dx, cy - dy, 'ground_full');
-        } else {
-          game.add.sprite(cx - dx, cy - dy, 'ground_left');
-        }
-        // top right part
-        if (onRight) {
-          game.add.sprite(cx + dx, cy - dy, 'ground_full');
-        } else {
-          game.add.sprite(cx + dx, cy - dy, 'ground_right');
-        }
-        // bottom left
-        if (onLeft && onBottom) {
-          game.add.sprite(cx - dx, cy + dy, 'ground_full');
-        } else if (onLeft) {
-          game.add.sprite(cx - dx, cy + dy, 'ground_bottom');
-        } else if(onBottom) {
-          game.add.sprite(cx - dx, cy + dy, 'ground_left');
-        } else {
-          game.add.sprite(cx - dx, cy + dy, 'ground_bottomleft');
-        }
-        // bottom right
-        if (onRight && onBottom) {
-          game.add.sprite(cx + dx, cy + dy, 'ground_full');
-        } else if (onRight) {
-          game.add.sprite(cx + dx, cy + dy, 'ground_bottom');
-        } else if (onBottom) {
-          game.add.sprite(cx + dx, cy + dy, 'ground_right');
-        } else {
-          game.add.sprite(cx + dx, cy + dy, 'ground_bottomright');
-        }
-        // Add top layer
-        if (!onTop) {
-          var image = game.add.sprite(cx, cy - 2.0 * dy, 'ground_top');
-          image.setDepth(1);
-        }
-
-        // Random layers
-        // TODO: Do not use random
-        const rx = Math.random()*10.0 - 5.0;
-        const ry = Math.random()*10.0 - 5.0;
-        if (Math.random() < 0.15) {
-          var im = game.add.sprite(cx + rx, cy + ry, 'ground_r0');
-          im.rotation = Math.random()*Math.PI;
-        } else if (Math.random() < 0.15) {
-          var im = game.add.sprite(cx + rx, cy + ry, 'ground_r1');
-          im.rotation = Math.random()*Math.PI;
-        }
-      }
+      mapCreateSingleTile(game, map, px, py, dummy);
     }
   }
   createMapBlocks(game, map.tiles, map.x, map.y, 80, 80, groupBlocks);
 
-  // TODO: This parts needs to be done better
-
-  // Add enemies
-  for (var i = 0; i < 10; i++) {
-    enemyCreate(game, ENEMY_ELECTRIC_MONSTER, Math.random()*map.x*80, Math.random()*(map.y-2)*80);
-    enemyCreate(game, ENEMY_BURNING_MONSTER, Math.random()*map.x*80, Math.random()*(map.y-2)*80);
-    enemyCreate(game, ENEMY_FOREST_MONSTER, Math.random()*map.x*80, Math.random()*(map.y-2)*80);
-    enemyCreate(game, ENEMY_STORM_MONSTER, Math.random()*map.x*80, Math.random()*(4)*80);
-  }
-
-  // Add some pickups
-  for (var i = 0; i < 40; i++) {
-    pickupCreate(game, PICKUP_WATERMELON, Math.random()*map.x*80, Math.random()*(map.y-2)*80);
+  // Add enemies and pickups
+  for (var px = 0; px < map.x; px++) {
+    for (var py = 0; py < map.y; py++) {
+      const cx = px*80.0 + 40.0;
+      const cy = py*80.0 + 40.0;
+      const newEnemy = map.enemies[px + py*map.x];
+      if (newEnemy != 0) enemyCreate(game, newEnemy, cx, cy);
+      const newPickup = map.pickups[px + py*map.x];
+      if (newPickup != 0) pickupCreate(game, newPickup, cx, cy);
+    }
   }
 
   // Create player
-  // TODO:
-  player = groupPlayer.create(100, 450, 'player');
+  player = groupPlayer.create(map.playerStartX*80.0 + 40.0, map.playerStartY*80.0 + 40.0, 'player');
   player.setGravity(0, 400);
   player.setCollideWorldBounds(true);
   player.setBounce(0.0, 0.0);
 
-  // TODO:
+  // Follow player
+  // TODO: Does this need to change?
   game.physics.world.setBounds(0, 0, map.x*80, map.y*80);
   game.cameras.main.startFollow(player);
   game.cameras.main.setBounds(0, 0, map.x*80, map.y*80);

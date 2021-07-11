@@ -30,7 +30,7 @@ var config = {
 // Game singletons
 
 var gameSingleton = new Phaser.Game(config);
-var gameMode = GAME_MODE_PLAYING;
+var gameMode = GAME_MODE_NONE;
 
 var groupBlocks;
 var groupPlayer;
@@ -50,6 +50,17 @@ var playerHealth = 100.0;
 // TODO: Where do these need to be?
 var uiHealthBar = null;
 
+
+// Current map blueprint
+// Used by editor or by
+var mapBlueprint = null;
+
+// Run local storage
+storageLoad();
+
+////////////////////////
+// Phaser 3 functions //
+////////////////////////
 
 function preload() {
   resLoadResources(this);
@@ -78,30 +89,42 @@ function create() {
   this.physics.add.overlap(groupEnemyShots, groupPlayer, mainShotHitPlayer, null, this);
   this.physics.add.overlap(groupPickups, groupPlayer, mainCollectedPickup, null, this);
 
-  // TODO, start with main menu instead
 
-  var map = mapCreateDummy();
-  mapInitialize(this, map);
-
-  uiCreate(this);
 
   // TODO
-  var music = this.sound.add('test_music');
-  music.setLoop(true);
-  music.play();
+  //var music = this.sound.add('test_music');
+  //music.setLoop(true);
+  //music.play();
 
 }
 
 function update() {
 
-  var curTime = this.time.now;
+  // Update input
+  // TODO: Does phaser have these in a better fashion?
+  inputUpdate(this);
 
-  if (gameMode == GAME_MODE_MAIN_MENU) {
-    stateHandleMainMenu(this, curTime);
+  var newMode = gameMode;
+  if (gameMode == GAME_MODE_NONE) {
+    newMode = GAME_MODE_MAIN_MENU;
+  } else if (gameMode == GAME_MODE_MAIN_MENU) {
+    newMode = stateHandleMainMenu(this);
   } else if (gameMode == GAME_MODE_PLAYING) {
-    stateHandlePlay(this, curTime);
+    newMode = stateHandlePlay(this);
   } else if (gameMode == GAME_MODE_MAP_EDITOR) {
-    stateHandleEditor(this, curTime);
+    newMode = stateHandleEditor(this);
+  }
+
+  // Change state
+  if (newMode != gameMode) {
+    gameMode = newMode;
+    if (gameMode == GAME_MODE_MAIN_MENU) {
+      stateStartMainMenu(this);
+    } else if (gameMode == GAME_MODE_PLAYING) {
+      stateStartPlay(this);
+    } else if (gameMode == GAME_MODE_MAP_EDITOR) {
+      stateStartEditor(this);
+    }
   }
 
 }
