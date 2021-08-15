@@ -25,12 +25,13 @@ function mapCreateDummy() {
   // vertical tiles
   var count = 0;
   for (var i = 0; i < 10000; i++) {
+    const newTile = Math.random() > 0.2 ? LAYER_GROUND : LAYER_ROCK;
     var px = Math.floor(Math.random()*mapX);
     var py = Math.floor(Math.random()*mapY);
-    const ot = (py > 0) && tiles[px + (py-1)*mapX] == 1;
-    const ob = (py < mapX-1) && tiles[px + (py+1)*mapX] == 1;
+    const ot = (py > 0) && tiles[px + (py-1)*mapX] != 0;
+    const ob = (py < mapX-1) && tiles[px + (py+1)*mapX] != 0;
     if (ot || ob) {
-      tiles[px + py*mapX] = 1;
+      tiles[px + py*mapX] = newTile;
       count += 1;
       if (count > 400) break;
     }
@@ -38,18 +39,19 @@ function mapCreateDummy() {
   // and horizontal
   count = 0;
   for (var i = 0; i < 10000; i++) {
+    const newTile = Math.random() > 0.2 ? LAYER_GROUND : LAYER_ROCK;
     var px = Math.floor(Math.random()*mapX);
     var py = Math.floor(Math.random()*mapY);
-    const ol = (px > 0) && tiles[px - 1 + py*mapX] == 1;
-    const or = (px < mapX-1) && tiles[px + 1 + py*mapX] == 1;
+    const ol = (px > 0) && tiles[px - 1 + py*mapX] != 0;
+    const or = (px < mapX-1) && tiles[px + 1 + py*mapX] != 0;
     if (ol || or) {
-      tiles[px + py*mapX] = 1;
+      tiles[px + py*mapX] = newTile;
       count += 1;
       if (count > 1600) break;
     }
   }
 
-  // TODO: All of this will be removed
+
   // Add some random enemies and PICKUPS
   for (var i = 0; i < 5; i++) {
     var index = mapPickFreeTile(tiles);
@@ -82,6 +84,7 @@ function mapCreateDummy() {
       if (tiles[x + ay*mapX] == 0) tiles[x + ay*mapX] = LAYER_CAVE;
     }
   }
+
 
   return { x: mapX, y: mapY, tiles: tiles, enemies: enemies, pickups: pickups, playerStartX: 0, playerStartY: 0 }
 

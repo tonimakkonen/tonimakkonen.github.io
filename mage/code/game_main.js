@@ -31,6 +31,7 @@ var config = {
 
 var gameSingleton = new Phaser.Game(config);
 var gameMode = GAME_MODE_NONE;
+var gameModeLast = gameMode;
 
 var groupBlocks;
 var groupPlayer;
@@ -43,12 +44,6 @@ var listEnemies = []; // List of all enemies
 
 
 // TODO: Think about player properties
-var player = null;
-var lastShot = 0; // TODO
-var playerHealth = 100.0;
-
-// TODO: Where do these need to be?
-var uiHealthBar = null;
 
 
 // Current map blueprint
@@ -113,10 +108,13 @@ function update() {
     newMode = stateHandlePlay(this);
   } else if (gameMode == GAME_MODE_MAP_EDITOR) {
     newMode = stateHandleEditor(this);
+  } else {
+    throw 'Unkown game mode: ' + gameMode;
   }
 
   // Change state
   if (newMode != gameMode) {
+    gameModeLast = gameMode;
     gameMode = newMode;
     if (gameMode == GAME_MODE_MAIN_MENU) {
       stateStartMainMenu(this);
@@ -124,6 +122,8 @@ function update() {
       stateStartPlay(this);
     } else if (gameMode == GAME_MODE_MAP_EDITOR) {
       stateStartEditor(this);
+    } else {
+      throw 'Switching to unknown game mode: ' + newMode;
     }
   }
 

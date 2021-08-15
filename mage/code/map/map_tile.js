@@ -36,6 +36,10 @@ function mapCreateSingleTile(game, map, px, py, list) {
     throw 'Unkown layer type: ' + layer.type;
   }
 
+  // Create decorations
+
+  
+
 /*
     // Randoms
     // TODO: Remove random
@@ -105,6 +109,10 @@ function mapHandleSymmetric(game, layer, list, px, py, cl, cr, ct, cb, ctl, ctr,
     mapAddThing(game, layer.name + '_' + mapGetSymmetricExtension(bl, false), px*80.0 + 20.0, py*80.0 + 100.0, layer.zBlock, list);
     mapAddThing(game, layer.name + '_' + mapGetSymmetricExtension(br, false), px*80.0 + 60.0, py*80.0 + 100.0, layer.zBlock, list);
   }
+  // Handle extension
+
+
+  // TODO:
 }
 
 function mapGetSymmetricExtension(name, horizontal) {

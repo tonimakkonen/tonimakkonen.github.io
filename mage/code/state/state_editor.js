@@ -41,6 +41,7 @@ EDITOR_MENU.add({x: 9, y: 0, special: EDITOR_SPECIAL_CONFIRM, option: {type: EDI
 // Second row, ground options
 EDITOR_MENU.add({x: 0, y: 1, tool: EDITOR_TOOL_GROUND, option: LAYER_GROUND, image: 'ground_full'});
 EDITOR_MENU.add({x: 1, y: 1, tool: EDITOR_TOOL_GROUND, option: LAYER_CAVE, image: 'cave_full'});
+EDITOR_MENU.add({x: 2, y: 1, tool: EDITOR_TOOL_GROUND, option: LAYER_ROCK, image: 'rock_full'});
 
 // Decorations
 
@@ -50,6 +51,8 @@ EDITOR_MENU.add({x: 1, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_BURNING_MONS
 EDITOR_MENU.add({x: 2, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_ELECTRIC_MONSTER, image: 'enemy_electric_monster'});
 EDITOR_MENU.add({x: 3, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_STORM_MONSTER, image: 'enemy_storm_monster'});
 EDITOR_MENU.add({x: 4, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_TWISTER_MONSTER, image: 'enemy_twister_monster'});
+EDITOR_MENU.add({x: 5, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_SHINING_TREE_MONSTER, image: 'enemy_shining_tree_monster', scale: 0.25});
+EDITOR_MENU.add({x: 6, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_MAGMA_MONSTER, image: 'enemy_magma_monster', scale: 0.75});
 
 // Pickups
 EDITOR_MENU.add({x: 0, y: 3, tool: EDITOR_TOOL_PICKUP, option: PICKUP_WATERMELON, image: 'pickup_watermelon'});
@@ -125,7 +128,9 @@ function editorAddMenuOption(game, mo) {
   const cx = mo.x * 80.0 + 40.0 + 80.0;
   const cy = mo.y * 80.0 + 40.0 + 80.0;
   if (mo.image) {
-    editorAddToolBox(game.add.image(cx, cy, mo.image), 0.75);
+    var image = game.add.image(cx, cy, mo.image);
+    if (mo.scale) image.setScale(mo.scale);
+    editorAddToolBox(image, 0.75);
   } else if (mo.text) {
     var text = game.add.text(cx, cy, mo.text).setOrigin(0.5);
     editorAddToolBox(text, 0.75);
@@ -394,12 +399,12 @@ function editorApplyPlayerStart(game, map, px, py) {
 }
 
 function editorApplyEnemy(game, map, px, py, option) {
-  if (mapIsBlocking(map.tiles[px + py*map.x])) return false;
+  if (mapIsBlocked(map.tiles[px + py*map.x])) return false;
   return editorSetEnemy(game, map, px, py, option);
 }
 
 function editorApplyPickup(game, map, px, py, option) {
-  if (mapIsBlocking(map.tiles[px + py*map.x])) return false;
+  if (mapIsBlocked(map.tiles[px + py*map.x])) return false;
   return editorSetPickup(game, map, px, py, option);
 }
 
@@ -411,7 +416,7 @@ function editorSetTile(game, map, px, py, value) {
   if (map.tiles[px + py*map.x] != value) {
     map.tiles[px + py*map.x] = value;
     editorRedoTiles(game, map, px, py);
-    if (mapIsBlocking(value)) {
+    if (mapIsBlocked(value)) {
       editorSetEnemy(game, map, px, py, 0);
       editorSetPickup(game, map, px, py, 0);
     }

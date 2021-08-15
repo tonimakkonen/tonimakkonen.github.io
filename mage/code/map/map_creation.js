@@ -14,7 +14,7 @@ function mapCreateEmpty(x, y) {
 }
 
 // Create all the map objects
-function mapInitialize(game, map) {
+function mapInitialize(game, map, mapObjectList) {
 
   // Add BG images
   // TODO: Make this more generic
@@ -31,13 +31,14 @@ function mapInitialize(game, map) {
   //bg2.setScrollFactor(0.15, 0.15);
 
   // Add Tiles
-  var dummy = [];
   for (var px = 0; px < map.x; px++) {
     for (var py = 0; py < map.y; py++) {
-      mapCreateSingleTile(game, map, px, py, dummy);
+      mapCreateSingleTile(game, map, px, py, mapObjectList);
     }
   }
-  createMapBlocks(game, map.tiles, map.x, map.y, 80, 80, groupBlocks);
+  createMapBlocks(game, map.tiles, map.x, map.y, 80, 80, groupBlocks, mapObjectList);
+
+  // Note that enemies and such non-static content are not added into map object list
 
   // Add enemies and pickups
   for (var px = 0; px < map.x; px++) {
@@ -57,6 +58,8 @@ function mapInitialize(game, map) {
   player.setCollideWorldBounds(true);
   player.setBounce(0.0, 0.0);
 
+  // Create map ending
+
   // Follow player
   // TODO: Does this need to change?
   game.physics.world.setBounds(0, 0, map.x*80, map.y*80);
@@ -65,11 +68,9 @@ function mapInitialize(game, map) {
 }
 
 // Create "blocks" responsible for blocking the player
-function createMapBlocks(game, mapArray, mapX, mapY, tileX, tileY, group) {
+function createMapBlocks(game, mapArray, mapX, mapY, tileX, tileY, group, list) {
 
   const MARGIN = 2; // TODO
-
-  var list = [];
 
   // Run horizontally for each row
   for (var py = 0; py < mapY; py++) {
@@ -164,5 +165,8 @@ function addToListIfLongerThanOne(list, start, end) {
 }
 
 function mapIsBlocked(value) {
-  return value == 1;
+  if (value == 0) return false;
+  var layer = LAYERS.get(value);
+  if (!layer) throw 'Unknown layer: ' + layer;
+  return layer.block;
 }

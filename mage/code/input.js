@@ -23,7 +23,7 @@ function inputInitialize(game) {
   game.input.keyboard.on('keydown-' + 'F10', function (event) { this.scale.startFullscreen(); }, game);
 
   // Set default cursor (why do I need to do it like this?)
-  game.input.setDefaultCursor('url(imgs/aim.cur), pointer');
+  game.input.setDefaultCursor('url(imgs/mage_cursor.cur), pointer');
 
   inputA = game.input.keyboard.addKey('A');
   inputS = game.input.keyboard.addKey('S');

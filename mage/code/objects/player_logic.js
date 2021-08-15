@@ -1,7 +1,11 @@
 
 "use strict";
 
-// Handle player movement
+// Player variables
+
+var player = null;
+var lastShot = 0; // TODO
+var playerHealth = 100.0;
 
 function playerHandleLogic(game, curTime) {
 
@@ -54,12 +58,12 @@ function playerHandleLogic(game, curTime) {
 
   // Shoot (move elsewhere)
   if (game.input.activePointer.leftButtonDown() && curTime - lastShot > 250) {
-    shotShoot(game, true, SHOT_FIRE, player.x, player.y, dx, dy);
+    shotShoot(game, true, SHOT_ELECTRIC, player.x, player.y, dx, dy);
     lastShot = curTime;
   }
 
-  if (game.input.activePointer.rightButtonDown() && curTime - lastShot > 250) {
-    shotShoot(game, true, SHOT_ELECTRIC, player.x, player.y, dx, dy);
+  if (game.input.activePointer.rightButtonDown() && curTime - lastShot > 100) {
+    shotShoot(game, true, SHOT_FIRE_STORM, player.x, player.y, dx, dy);
     lastShot = curTime;
   }
 
@@ -72,6 +76,10 @@ function playerDealDamage(game, amount, type) {
     player.destroy();
     player = null;
     playerHealth = 0.0;
+  }
+  if (playerHealth > 100.0) {
+    console.log('blaa');
+    playerHealth = 100.0;
   }
   uiUpdateHealthBar(game);
 }
