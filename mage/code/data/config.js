@@ -71,6 +71,8 @@ const GRAPH_FIRE_SHOT            = 303;
 const GRAPH_TREE_SHOT            = 304;
 const GRAPH_FIRE_STORM_SHOT      = 305;
 
+const GRAPH_EXIT_DOOR1           = 401;
+
 var GRAPHS = new Map();
 
 GRAPHS.set(
@@ -209,6 +211,17 @@ GRAPHS.set(
   {
     location: 'imgs/shots/fire_storm.png',
     name: 'shot_fire_storm',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+// Exits
+
+GRAPHS.set(
+  GRAPH_EXIT_DOOR1,
+  {
+    location: 'imgs/door1.png',
+    name: 'exit_door1',
     type: GRAPH_TYPE_SINGLE
   }
 );

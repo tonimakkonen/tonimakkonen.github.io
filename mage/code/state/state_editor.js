@@ -11,6 +11,7 @@ const EDITOR_TOOL_PLAYER_START  = 3;
 const EDITOR_TOOL_ENEMY         = 4;
 const EDITOR_TOOL_PICKUP        = 5;
 const EDITOR_TOOL_DECORATION    = 6;
+const EDITOR_TOOL_EXIT          = 7;
 
 const EDITOR_ERASE_ALL          = 1;
 const EDITOR_ERASE_OBJ          = 2;
@@ -27,6 +28,7 @@ var EDITOR_MENU = new Set();
 
 // Top row
 EDITOR_MENU.add({x: 0, y: 0, tool: EDITOR_TOOL_PLAYER_START, image: 'player'});
+EDITOR_MENU.add({x: 1, y: 0, tool: EDITOR_TOOL_EXIT, image: 'exit_door1'});
 
 EDITOR_MENU.add({x: 2, y: 0, tool: EDITOR_TOOL_ERASE, option: EDITOR_ERASE_ALL,  image: 'ui_eraser_all'});
 EDITOR_MENU.add({x: 3, y: 0, tool: EDITOR_TOOL_ERASE, option: EDITOR_ERASE_OBJ,  image: 'ui_eraser_obj'});
@@ -88,6 +90,7 @@ var edToolBoxObjects = [];  // all in tool box (that you open with tab)
 var edLeftSelect = null;    // left select in tool box
 var edRightSelect = null;   // right select in tool box
 var edPlayerStart = null;   // player start
+var edExit = null;          // exit
 var edTiles = [];           // tiles for each tile
 var edEnemies = [];         //  enemies for each tile
 var edPickups = [];         //  pickups for each tile
@@ -322,6 +325,8 @@ function editorApplyTool(game, map, px, py, toolType, toolOption) {
     changes = editorApplyPickup(game, map, px, py, toolOption);
   } else if (toolType == EDITOR_TOOL_DECORATION) {
     changes = editorApplyDecoration(game, map, px, py, toolOption);
+  } else if (toolType == EDITOR_TOOL_EXIT) {
+    changes = editorApplyExit(game, map, px, py, toolOption);
   } else {
     throw 'Unknown tool type: ' + toolType;
   }
@@ -398,6 +403,16 @@ function editorApplyPlayerStart(game, map, px, py) {
   return false;
 }
 
+function editorApplyExit(game, map, px, py) {
+  if (px != map.exitX || py != map.exitY) {
+    map.exitX = px;
+    map.exitY = py;
+    edExit.setPosition(px * 80.0 + 40.0, py * 80.0 + 40.0);
+    return true;
+  }
+  return false;
+}
+
 function editorApplyEnemy(game, map, px, py, option) {
   if (mapIsBlocked(map.tiles[px + py*map.x])) return false;
   return editorSetEnemy(game, map, px, py, option);
@@ -468,12 +483,16 @@ function editorCreateAllFromMap(game, map) {
   }
   edPlayerStart = game.add.image(mapBlueprint.playerStartX*80.0 + 40, mapBlueprint.playerStartY*80.0 + 40.0, 'player');
   edPlayerStart.setDepth(5);
+  edExit = game.add.image(mapBlueprint.exitX*80.0 + 40, mapBlueprint.exitY*80.0 + 40.0, 'exit_door1');
+  edExit.setDepth(5);
 }
 
 // Destroy all map objects
 function editorDestroyAllMapObjects() {
   edPlayerStart.destroy();
   edPlayerStart = null;
+  edExit.destroy();
+  edExit = null;
   edTiles.forEach(o => {
     o.forEach(s => s.destroy());
   });

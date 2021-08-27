@@ -14,8 +14,10 @@ function pickupCreate(game, pickupType, x, y) {
 }
 
 function pickupCollect(game, pickup) {
-  pickup.destroy();
   if (pickup.xInfo.heal) {
-    playerDealDamage(game, -pickup.xInfo.heal, 0);
+    if (playerHealth < 100.0) {
+      pickup.destroy();
+      playerHeal(game, pickup.xInfo.heal);
+    }
   }
 }

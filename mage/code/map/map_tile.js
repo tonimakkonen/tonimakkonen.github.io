@@ -38,7 +38,7 @@ function mapCreateSingleTile(game, map, px, py, list) {
 
   // Create decorations
 
-  
+
 
 /*
     // Randoms

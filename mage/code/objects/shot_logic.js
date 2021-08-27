@@ -39,15 +39,12 @@ function shotShoot(game, isPlayer, shotType, x, y, dx, dy) {
 
 function shotHitPlayer(game, shot) {
   shotDestroy(game, shot);
-  // TODO: Add type
-  playerDealDamage(game, shot.xInfo.damage, 0);
+  playerDealDamage(game, shot.xInfo.damage, shot);
 }
 
 function shotHitEnemy(game, shot, enemy) {
   shotDestroy(game, shot);
-  // TODO: Add hit function or similar
-  // TODO: Add type
-  enemy.xHealth -= shot.xInfo.damage;
+  enemyDealDamage(game, enemy, shot.xInfo.damage, shot);
 }
 
 function shotHitWall(game, shot, wall) {

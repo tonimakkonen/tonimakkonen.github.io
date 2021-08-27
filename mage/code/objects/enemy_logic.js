@@ -7,13 +7,11 @@ function enemyDestroyAll() {
   listEnemies = [];
 }
 
-// Remove enemy and all related objects from phaser3
 function enemyDestroy(enemy) {
   enemy.destroy();
 }
 
-// Kill and enemy handle possibly
-function enemyKill(game) {
+function enemyKill(game, enemy) {
   // TODO: drops, splatter, etc..
 }
 
@@ -63,7 +61,7 @@ function enemyCreate(game, enemyType, x, y) {
 function enemyHandleLogic(game, enemy, curTime) {
 
   if (enemy.xHealth <= 0.0) {
-    enemyKill(enemy);
+    enemyKill(game, enemy);
     return false; // Calling method handles removing from list
   }
 
@@ -88,6 +86,15 @@ function enemyHandleLogic(game, enemy, curTime) {
     return true;
   }
 
+  // Handle animation purely based on enemy graph type
+  if (enemy.xGraph.type == GRAPH_TYPE_LEFT_RIGHT) {
+    const desiredAnim = enemy.xGraph.name + (dx < 0 ? '_left' : '_right');
+    if (enemy.xlastAnim != desiredAnim) {
+      enemy.anims.play(desiredAnim);
+      enemy.xlastAnim = desiredAnim;
+    }
+  }
+
   // Handle different movement modes
   if(enemy.xInfo.moveFloat) {
     enemyHandleFloatMove(game, enemy, curTime, enemy.xInfo.moveFloat, dx, dy);
@@ -102,16 +109,17 @@ function enemyHandleLogic(game, enemy, curTime) {
     enemyHandleJump(game, enemy, enemy.xInfo.moveJump, dx, dy);
   }
 
-  // Handle firing
+  // Handle firing & spawn mechanics
   if (enemy.xInfo.shoot1) enemyHandleShot(game, enemy, enemy.xInfo.shoot1, 1, dx1, dy1);
   if (enemy.xInfo.shoot2) enemyHandleShot(game, enemy, enemy.xInfo.shoot2, 2, dx1, dy1);
-
-  // handle spawning
   if (enemy.xInfo.spawn) enemyhandleSpawn(game, enemy, enemy.xInfo.spawn);
-
 
   return true;
 }
+
+////////////////////
+// Movement modes //
+////////////////////
 
 function enemyHandleFloatMove(game, enemy, curTime, move, dx, dy) {
 
@@ -153,8 +161,6 @@ function enemyHandleFloatMove(game, enemy, curTime, move, dx, dy) {
   desireX += move.sway * acc * Math.cos(3.14 * (curTime / 1000.0 + enemy.xRandom));
   desireY += move.sway * acc * Math.sin(3.14 * (curTime / 1000.0 + enemy.xRandom));
 
-
-
   enemy.setGravity(desireX - move.alpha * vx, desireY - move.alpha * vy);
 }
 
@@ -172,14 +178,6 @@ function enemyHandleWalkMove(game, enemy, move, dx, dy) {
   const vx = enemy.body.velocity.x;
   const acc = desire - move.alpha * vx;
   enemy.setGravity(acc, 300); // TODO: gravity!
-
-  // Walking animation for walking enemies
-  // TODO: Should this be here??
-  const desiredAnim = enemy.xGraph.name + (dx < 0 ? '_left' : '_right');
-  if (enemy.xlastAnim != desiredAnim) {
-    enemy.anims.play(desiredAnim);
-    enemy.xlastAnim = desiredAnim;
-  }
 }
 
 // Handle jump
@@ -190,8 +188,15 @@ function enemyHandleJump(game, enemy, move, dx, dy) {
   }
 }
 
-function enemyDealDamage(game, enemy, amount, type) {
-  // TODO: Make use of this
+function enemyDealDamage(game, enemy, amount, shot) {
+  // TODO: Handle shot types and other effects
+  enemyUpdateHealth(game, enemy, -amount, shot);
+}
+
+function enemyUpdateHealth(game, enemy, amount) {
+  // Note that play state loop will handle destroying enemies
+  enemy.xHealth += amount;
+  // Update health bar if any
 }
 
 function enemyHandleShot(game, enemy, info, type, dx1, dy1) {

@@ -9,7 +9,8 @@ function stateStartMainMenu(game) {
   // TODO: Change the BG
   mmBg = game.add.image(settingWidth/2, settingHeight/2, 'bg0');
 
-  mmAddNewText(game, 'Start on random map');
+  mmAddNewText(game, 'Start on random map (easy)');
+  mmAddNewText(game, 'Start on random map (difficult)');
   mmAddNewText(game, 'Editor');
 }
 
@@ -53,10 +54,14 @@ function stateHandleMainMenu(game) {
 
 function mmPushButton(game, option) {
   if (option == 0) {
-    mapBlueprint = mapCreateDummy();
+    mapBlueprint = mapCreateDummy(3, 1); // size, difficulty
     mmDestroy(game);
     return GAME_MODE_PLAYING;
-  } else if (option == 1) {
+  } else if(option == 1) {
+    mapBlueprint = mapCreateDummy(5, 2); // size, difficulty
+    mmDestroy(game);
+    return GAME_MODE_PLAYING;
+  } else if (option == 2) {
     mmDestroy(game);
     return GAME_MODE_MAP_EDITOR;
   } else {

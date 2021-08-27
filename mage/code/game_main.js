@@ -39,6 +39,7 @@ var groupEnemies;
 var groupPlayerShots;
 var groupEnemyShots;
 var groupPickups;
+var groupExits;
 var listMapObjects = []; // All the current map objects to be deleted..
 var listEnemies = []; // List of all enemies
 
@@ -73,6 +74,7 @@ function create() {
   groupPlayerShots = this.physics.add.group();
   groupEnemyShots = this.physics.add.group();
   groupPickups = this.physics.add.group();
+  groupExits = this.physics.add.group();
 
   this.physics.add.collider(groupBlocks, groupPlayer);
   this.physics.add.collider(groupBlocks, groupEnemies);
@@ -83,6 +85,7 @@ function create() {
   this.physics.add.overlap(groupPlayerShots, groupEnemies, mainShotHitEnemy, null, this);
   this.physics.add.overlap(groupEnemyShots, groupPlayer, mainShotHitPlayer, null, this);
   this.physics.add.overlap(groupPickups, groupPlayer, mainCollectedPickup, null, this);
+  this.physics.add.overlap(groupExits, groupPlayer, mainEnterExit, null, this);
 
 
 
@@ -145,4 +148,8 @@ function mainShotHitWall(wall, shot) {
 
 function mainCollectedPickup(pickup, _pl) {
   pickupCollect(this, pickup);
+}
+
+function mainEnterExit(exit, _pl) {
+  playEnterExit(this, exit);
 }

@@ -6,6 +6,7 @@
 var player = null;
 var lastShot = 0; // TODO
 var playerHealth = 100.0;
+var playerLastRegen = null;
 
 function playerHandleLogic(game, curTime) {
 
@@ -56,7 +57,8 @@ function playerHandleLogic(game, curTime) {
   dx = dx / len;
   dy = dy / len;
 
-  // Shoot (move elsewhere)
+  // Shoot
+  // TODO: Handle selected spells
   if (game.input.activePointer.leftButtonDown() && curTime - lastShot > 250) {
     shotShoot(game, true, SHOT_ELECTRIC, player.x, player.y, dx, dy);
     lastShot = curTime;
@@ -67,18 +69,30 @@ function playerHandleLogic(game, curTime) {
     lastShot = curTime;
   }
 
+  // Regeneration
+  if (playerLastRegen == null) playerLastRegen = game.time.now;
+  const dt = game.time.now - playerLastRegen;
+  playerHeal(game, dt * 2.0 / 1000.0);
+  playerLastRegen = game.time.now;
 }
 
-function playerDealDamage(game, amount, type) {
+function playerHeal(game, amount) {
+  playerUpdateHealth(game, amount);
+}
+
+function playerDealDamage(game, amount, shot) {
   // TODO: Consider type, kick effect etc?
-  playerHealth -= amount;
+  playerUpdateHealth(game, -amount);
+}
+
+function playerUpdateHealth(game, amount) {
+  playerHealth += amount;
   if (playerHealth <= 0.0) {
     player.destroy();
     player = null;
     playerHealth = 0.0;
   }
   if (playerHealth > 100.0) {
-    console.log('blaa');
     playerHealth = 100.0;
   }
   uiUpdateHealthBar(game);
