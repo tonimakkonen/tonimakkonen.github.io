@@ -4,9 +4,16 @@
 // Player variables
 
 var player = null;
-var lastShot = 0; // TODO
 var playerHealth = 100.0;
+var playerMana = 100.0;
 var playerLastRegen = null;
+
+var playerLeftSpell = SPELLS.get(SPELL_BALL_LIGHTNING);
+var playerRightSpell = SPELLS.get(SPELL_FIRE_STORM);
+var playerLeftSpellLast = 0;
+var playerRightSpellLast = 0;
+
+
 
 function playerHandleLogic(game, curTime) {
 
@@ -58,22 +65,34 @@ function playerHandleLogic(game, curTime) {
   dy = dy / len;
 
   // Shoot
-  // TODO: Handle selected spells
-  if (game.input.activePointer.leftButtonDown() && curTime - lastShot > 250) {
-    shotShoot(game, true, SHOT_ELECTRIC, player.x, player.y, dx, dy);
-    lastShot = curTime;
+  if(game.input.activePointer.leftButtonDown()) {
+    playerLeftSpellLast = playerHandleSpell(game, playerLeftSpell, playerLeftSpellLast, dx, dy);
   }
-
-  if (game.input.activePointer.rightButtonDown() && curTime - lastShot > 1000) {
-    shotShoot(game, true, SHOT_FIRE_STORM, player.x, player.y, dx, dy);
-    lastShot = curTime;
+  if (game.input.activePointer.rightButtonDown()) {
+    playerRightSpellLast = playerHandleSpell(game, playerRightSpell, playerRightSpellLast, dx, dy);
   }
 
   // Regeneration
   if (playerLastRegen == null) playerLastRegen = game.time.now;
   const dt = game.time.now - playerLastRegen;
-  playerHeal(game, dt * 2.0 / 1000.0);
+  // TODO: Make use of more generic player propertioes
+  playerHeal(game, dt * 2.0 / 1000.0); // 2 per sec
+  playerUpdateMana(game, dt * 5.0 / 1000.0); // 5 per sec
   playerLastRegen = game.time.now;
+}
+
+function playerHandleSpell(game, spell, last, dx, dy) {
+  // TODO: handle magic types and player properties in cost and reload times
+  if(spell == null) return last;
+  const curTime = game.time.now;
+  const reloadTime = spell.reload;
+  if (curTime < last + reloadTime) return last;
+  const manaCost = spell.cost;
+  if (playerUseManaIfCan(game, manaCost)) {
+    shotShoot(game, true, spell.shoot, player.x, player.y, dx, dy);
+    return curTime;
+  }
+  return last;
 }
 
 function playerHeal(game, amount) {
@@ -85,15 +104,31 @@ function playerDealDamage(game, amount, shot) {
   playerUpdateHealth(game, -amount);
 }
 
+
+function playerUseManaIfCan(game, cost) {
+  if (playerMana >= cost) {
+    playerUpdateMana(game, -cost);
+    return true;
+  }
+  return false;
+}
+
 function playerUpdateHealth(game, amount) {
+  const before = playerHealth;
   playerHealth += amount;
   if (playerHealth <= 0.0) {
     player.destroy();
     player = null;
     playerHealth = 0.0;
   }
-  if (playerHealth > 100.0) {
-    playerHealth = 100.0;
-  }
-  uiUpdateHealthBar(game);
+  if (playerHealth > 100.0) playerHealth = 100.0;
+  if (playerHealth != before) uiUpdateHealthBar(game);
+}
+
+function playerUpdateMana(game, amount) {
+  const before = playerMana;
+  playerMana += amount;
+  if (playerMana < 0.0) playerMana = 0.0;
+  if (playerMana > 100.0 ) playerMana = 100.0;
+  if (playerMana != before) uiUpdateManaBar(game);
 }

@@ -21,6 +21,7 @@ function stateStartPlay(game) {
 
 function playInitMap(game) {
   mapInitialize(game, mapBlueprint, playStaticMapObjects);
+  // TODO: Add player following here
 }
 
 function playDestroyPhaserObjects(game) {
@@ -39,7 +40,8 @@ function playDestroyPhaserObjects(game) {
 
   // Camera and other stuff
   game.cameras.main.stopFollow();
-  // TODO: World bounds, camera position
+  game.cameras.main.removeBounds();
+  game.cameras.main.centerOn(settingWidth / 2.0, settingHeight / 2.0);
 }
 
 // When entering the game exit

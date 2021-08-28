@@ -4,8 +4,12 @@
     <meta charset="utf-8">
     <title>The Mage</title>
     <script type="text/javascript" src="phaser/phaser.min.js"></script>
+
     <script type="text/javascript" src="code/storage.js"></script>
+
     <script type="text/javascript" src="code/data/config.js"></script>
+    <script type="text/javascript" src="code/data/config_spell.js"></script>
+
     <script type="text/javascript" src="code/resources.js"></script>
     <script type="text/javascript" src="code/input.js"></script>
     <script type="text/javascript" src="code/state/state_main_menu.js"></script>
@@ -28,8 +32,8 @@
     </div>
 
     <hr>
-    <p>Super early alpha version.. PRESS F5 to generate a new random map. It's purely random so there is no guarantee you won't get stuck.</p>
-    <p>Press F10 to enter full screen. A and D to move left and right, space to jump, and LMB and RMB to shoot.</p>
+    <p>Super early alpha version.. Press F5 to start from the beginning, the editor changes are present. The random maps are generated randomly, in a fairly simple manner so there is no guarantee they are passable.</p>
+    <p>Press F10 to enter full screen. A and D to move left and right, space to jump, and LMB and RMB to shoot. TAB brings up the menu in the editor and in the game.</p>
     <a href="credits.html">Credits and attributions</a>
 
     <input id="file-input" type="file" accept="application/JSON" name="name" style="display: none;" onchange="editorUploadFile(this.files[0])" />

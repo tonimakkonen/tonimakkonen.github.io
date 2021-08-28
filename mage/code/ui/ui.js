@@ -8,6 +8,7 @@ var uiBarBg = null;
 var uiHealthBar = null;
 var uiManaBar = null;
 
+// TODO: Consider passing arguments to this method
 
 function uiCreate(game) {
   uiBarBg = game.add.rectangle(20.0 + uiBarWidth / 2.0, settingHeight - 30, uiBarWidth + 10.0, uiBarHeight * 2.0 + 10, 0x000000);
@@ -30,8 +31,12 @@ function uiUpdateHealthBar(game) {
 }
 
 function uiUpdateManaBar(game) {
-  //const width = (playerHealth / 100.0) * uiBarWidth;
-  //uiHealthBar.setSize(width, uiBarHeight);
+  const width = (playerMana / 100.0) * uiBarWidth;
+  uiManaBar.setSize(width, uiBarHeight);
+}
+
+function uiUpdateSpellBars(game) {
+
 }
 
 function uiDestroy(game) {

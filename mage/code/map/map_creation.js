@@ -67,6 +67,7 @@ function mapInitialize(game, map, mapObjectList) {
 
   // Follow player
   // TODO: Does this need to change?
+  // TODO: Maybe this should be in ppay?
   game.physics.world.setBounds(0, 0, map.x*80, map.y*80);
   game.cameras.main.startFollow(player);
   game.cameras.main.setBounds(0, 0, map.x*80, map.y*80);
@@ -167,6 +168,19 @@ function addToListIfLongerThanOne(list, start, end) {
     list.push(start);
     list.push(end);
   }
+}
+
+// TODO: Move to utils method?
+
+
+
+//function mapIsBlocked(map, px, py) {
+//  return mapIsBlocked(map.tiles, map.x, map.y, px, py);
+//}
+
+function mapIsTileBlocked(tiles, sizeX, sizeY, px, py) {
+  if (px < 0 || py < 0 || px >= sizeX || py >= sizeY) return true;
+  return mapIsBlocked(tiles[px + py*sizeX]);
 }
 
 function mapIsBlocked(value) {

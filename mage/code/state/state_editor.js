@@ -58,6 +58,7 @@ EDITOR_MENU.add({x: 6, y: 2, tool: EDITOR_TOOL_ENEMY, option: ENEMY_MAGMA_MONSTE
 
 // Pickups
 EDITOR_MENU.add({x: 0, y: 3, tool: EDITOR_TOOL_PICKUP, option: PICKUP_WATERMELON, image: 'pickup_watermelon'});
+EDITOR_MENU.add({x: 1, y: 3, tool: EDITOR_TOOL_PICKUP, option: PICKUP_MUSHROOM, image: 'pickup_mushroom'});
 
 // Special options
 EDITOR_MENU.add({x: 0, y: 6, special: EDITOR_SPECIAL_TRY, text: 'Try'});
@@ -549,8 +550,10 @@ function editorUpdateSingle(game, map, existing, mapList, type, px, py) {
   }
   const needed = mapList[index];
   if (needed != 0) {
-    const graph = GRAPHS.get(type.get(needed).graph);
-    const im = game.add.image(px * 80.0 + 40.0, py * 80.0 + 40.0, graph.name);
+    const info = type.get(needed);
+    const graph = GRAPHS.get(info.graph);
+    const moveY = info.moveY ? info.moveY : 0.0;
+    const im = game.add.image(px * 80.0 + 40.0, py * 80.0 + 40.0 + moveY, graph.name);
     im.setDepth(Z_ACTION);
     existing[index] = im;
   }
