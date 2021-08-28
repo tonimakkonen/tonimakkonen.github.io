@@ -11,6 +11,7 @@ function stateStartMainMenu(game) {
 
   mmAddNewText(game, 'Start on random map (easy)');
   mmAddNewText(game, 'Start on random map (difficult)');
+  mmAddNewText(game, 'Start on random map (super big)');
   mmAddNewText(game, 'Editor');
 }
 
@@ -62,6 +63,10 @@ function mmPushButton(game, option) {
     mmDestroy(game);
     return GAME_MODE_PLAYING;
   } else if (option == 2) {
+    mapBlueprint = mapCreateDummy(10, 1.5); // size, difficulty
+    mmDestroy(game);
+    return GAME_MODE_PLAYING;
+  } else if (option == 3) {
     mmDestroy(game);
     return GAME_MODE_MAP_EDITOR;
   } else {

@@ -29,12 +29,12 @@ function mapCreateDummy(sizeX, difficulty) {
   const horizontalCount = mapArea / 4;
 
   const randomCount = {
-    enemyBurning: difficulty * mapScreens * 0.7,
-    enemyTwister: difficulty * mapScreens * 0.7,
-    enemyElectric: difficulty * mapScreens * 0.7,
-    enemyStorm: difficulty * mapScreens * 0.7,
-    enemyMagma: difficulty * mapScreens * 0.3,
-    enemyTree: difficulty * mapScreens * 0.3,
+    enemyBurning: difficulty * mapScreens * 0.5,
+    enemyTwister: difficulty * mapScreens * 0.5,
+    enemyElectric: difficulty * mapScreens * 0.5,
+    enemyStorm: difficulty * mapScreens * 0.5,
+    enemyMagma: difficulty * mapScreens * 0.2,
+    enemyTree: difficulty * mapScreens * 0.2,
     pickupMelons: mapScreens * 2.0,
     pickupMushrooms: mapScreens * 2.0
   };
@@ -119,7 +119,7 @@ function mapCreateDummy(sizeX, difficulty) {
   }
   for (var py = startY; py >= 0; py--) {
     const index = mapX - 1 + py*mapX;
-    if(mapIsBlocked[tiles[index]]) tiles[index] = 0;
+    if(mapIsBlocked(tiles[index])) tiles[index] = 0;
   }
 
 

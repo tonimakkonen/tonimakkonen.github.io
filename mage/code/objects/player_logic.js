@@ -30,14 +30,14 @@ function playerHandleLogic(game, curTime) {
   const vx = player.body.velocity.x;
   const vy = player.body.velocity.y;
 
-  if (moveLeft && vx > -500) {
-    player.setGravityX(-700 - 2.0*vx);
+  if (moveLeft && vx > -250) {
+    player.setGravityX(-800 - 2.0*vx);
     //player.setVelocityX(-300);
-  } else if (moveRight && vx < 500) {
-    player.setGravityX(700 - 2.0*vx);
+  } else if (moveRight && vx < 250) {
+    player.setGravityX(800 - 2.0*vx);
     //player.setVelocityX(300);
   } else {
-    player.setGravityX(-2.0 * vx);
+    player.setGravityX(-4.0 * vx);
     //player.setVelocityX(0);
   }
 
