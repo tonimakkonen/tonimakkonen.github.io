@@ -25,6 +25,10 @@ function resLoadResources(game) {
         resLoadTopLayer(game, value);
       } else if (value.type == LAYER_TYPE_SYMMETRIC) {
         resLoadSymmetricLayer(game, value);
+      } else if (value.type == LAYER_TYPE_SINGLE) {
+        resLoadSingleLayer(game, value);
+      } else if (value.type == LAYER_TYPE_INVISIBLE) {
+        // do nothing
       } else {
         throw new 'Unkown layer type: ' + value;
       }
@@ -34,27 +38,41 @@ function resLoadResources(game) {
   // Images
 
   // bg images
-  game.load.image('bg0', 'imgs/bg0.png');
-  game.load.image('bg1', 'imgs/bg1.png');
-  game.load.image('bg2', 'imgs/bg2.png');
-  game.load.image('bg3', 'imgs/bg3.png');
-  game.load.image('bg_forest', 'imgs/bg_forest.png');
-
-  // TODO: Make this more generic
-  game.load.image('ground_r0', 'imgs/ground/ground_r0.png');
-  game.load.image('ground_r1', 'imgs/ground/ground_r1.png');
+  BACKGROUNDS.forEach(
+    (value, key) => {
+      if (value.name) {
+        game.load.image(value.name, value.location)
+      }
+    }
+  )
+  // TODO: Define these
+  //game.load.image('bg_mountains', 'imgs/bg_mountains.jpg');
+  //game.load.image('bg0', 'imgs/bg0.png');
+  //game.load.image('bg1', 'imgs/bg1.png');
+  //game.load.image('bg2', 'imgs/bg2.png');
+  //game.load.image('bg3', 'imgs/bg3.png');
+  //game.load.image('bg_forest', 'imgs/bg_forest.png');
 
   // Load UI images not defined in config
   game.load.image('ui_eraser_all', 'imgs/ui/eraser_all.png');
   game.load.image('ui_eraser_obj', 'imgs/ui/eraser_obj.png');
 
+  // Load spell images (not defined in config)
+  game.load.image('spell_dummy', 'imgs/spells/spell_dummy.png');
+  game.load.image('spell_fire_ball', 'imgs/spells/spell_fire_ball.png');
+
   // Sound
-  game.load.audio('test_music', 'sound/music.mp3', true);
+  // TODO:
+  //game.load.audio('test_music', 'sound/music.mp3', true);
 }
 
 // Load single image
 function resLoadSingle(game, value) {
   game.load.image(value.name, value.location);
+}
+
+function resLoadSingleLayer(game, value) {
+  game.load.image(value.name, value.locationBase);
 }
 
 // Load image with 4 frames for left right

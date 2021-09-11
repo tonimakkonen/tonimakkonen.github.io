@@ -9,15 +9,21 @@ var playerMana = 100.0;
 var playerLastRegen = null;
 
 var playerLeftSpell = SPELLS.get(SPELL_BALL_LIGHTNING);
-var playerRightSpell = SPELLS.get(SPELL_FIRE_STORM);
+var playerRightSpell = null;
 var playerLeftSpellLast = 0;
 var playerRightSpellLast = 0;
-
 
 
 function playerHandleLogic(game, curTime) {
 
   if (player == null) return;
+
+  if (player.xPoison) {
+    if (game.time.now > player.xPoison) {
+      player.xPoison = undefined;
+      player.clearTint();
+    }
+  }
 
   var ld = inputA.isDown;
   var rd = inputD.isDown;
@@ -64,21 +70,36 @@ function playerHandleLogic(game, curTime) {
   dx = dx / len;
   dy = dy / len;
 
-  // Shoot
-  if(game.input.activePointer.leftButtonDown()) {
-    playerLeftSpellLast = playerHandleSpell(game, playerLeftSpell, playerLeftSpellLast, dx, dy);
-  }
-  if (game.input.activePointer.rightButtonDown()) {
-    playerRightSpellLast = playerHandleSpell(game, playerRightSpell, playerRightSpellLast, dx, dy);
+  // Shoot (if we're not in tab menu)
+  if (!inputTab.isDown) {
+    if(game.input.activePointer.leftButtonDown()) {
+      playerLeftSpellLast = playerHandleSpell(game, playerLeftSpell, playerLeftSpellLast, dx, dy);
+    }
+    if (game.input.activePointer.rightButtonDown()) {
+      playerRightSpellLast = playerHandleSpell(game, playerRightSpell, playerRightSpellLast, dx, dy);
+    }
   }
 
   // Regeneration
   if (playerLastRegen == null) playerLastRegen = game.time.now;
   const dt = game.time.now - playerLastRegen;
+  var healAmount = 2.0;
+  if (player.xPoison) healAmount -= 5;
   // TODO: Make use of more generic player propertioes
-  playerHeal(game, dt * 2.0 / 1000.0); // 2 per sec
+  playerHeal(game, dt * healAmount / 1000.0); // 2 per sec
   playerUpdateMana(game, dt * 5.0 / 1000.0); // 5 per sec
   playerLastRegen = game.time.now;
+}
+
+// Choose a spell if is different than the last one
+function playerChooseSpell(game, spell, isLeft) {
+  if (isLeft) {
+    playerLeftSpell = spell;
+    playerLeftSpellLast = game.time.now;
+  } else {
+    playerRightSpell = spell;
+    playerRightSpell = game.time.now;
+  }
 }
 
 function playerHandleSpell(game, spell, last, dx, dy) {
@@ -89,7 +110,8 @@ function playerHandleSpell(game, spell, last, dx, dy) {
   if (curTime < last + reloadTime) return last;
   const manaCost = spell.cost;
   if (playerUseManaIfCan(game, manaCost)) {
-    shotShoot(game, true, spell.shoot, player.x, player.y, dx, dy);
+    if (spell.shoot) shotShoot(game, true, spell.shoot, player.x, player.y, dx, dy);
+    if (spell.effect) shotHandleEffect(game, spell.effect, player.x, player.y, dx, dy);
     return curTime;
   }
   return last;
@@ -100,10 +122,24 @@ function playerHeal(game, amount) {
 }
 
 function playerDealDamage(game, amount, shot) {
-  // TODO: Consider type, kick effect etc?
   playerUpdateHealth(game, -amount);
 }
 
+function playerPunch(game, px, py, shot) {
+  if(player == null) return;
+  const playerMass = 1.0;
+  const vx = player.body.velocity.x;
+  const vy = player.body.velocity.y;
+  player.setVelocity(vx + px / playerMass, vy + py / playerMass);
+}
+
+function playerPoison(game, amount) {
+  if (player == null) return;
+  if (!player.xFreeze) player.xPoison = game.time.now;
+  var playerMass = 1.0;
+  player.xPoison += amount / playerMass;
+  player.setTint(0x20ff20);
+}
 
 function playerUseManaIfCan(game, cost) {
   if (playerMana >= cost) {

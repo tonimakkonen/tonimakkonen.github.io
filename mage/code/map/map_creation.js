@@ -5,9 +5,12 @@ function mapCreateEmpty(x, y) {
   return {
     x: x,
     y: y,
+    background: BACKGROUND_EMPTY,
     tiles: new Array(x*y).fill(0),
     enemies: new Array(x*y).fill(0),
     pickups: new Array(x*y).fill(0),
+    decorations: new Array(x*y).fill(0),
+    decorationSeed: new Array(x*y).fill(0),
     playerStartX: 0,
     playerStartY: 0,
     exitX: 1,
@@ -16,27 +19,15 @@ function mapCreateEmpty(x, y) {
 }
 
 // Create all the map objects
-function mapInitialize(game, map, mapObjectList) {
+function mapInitialize(game, map, mapObjectList, inEditor) {
 
   // Add BG images
-  // TODO: Make this more generic
-
-  var bg = game.add.image(settingWidth/2, settingHeight/2, 'bg0');
-  bg.setScrollFactor(0.0, 0.0);
-  bg.setDepth(-10.0);
-  mapObjectList.push(bg);
-
-  //var bg2 = game.add.image(settingWidth/2, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  //bg2.setScrollFactor(0.15, 0.15);
-  //bg2 = game.add.image(settingWidth*1.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  //bg2.setScrollFactor(0.15, 0.15);
-  //bg2 = game.add.image(settingWidth*2.5, settingHeight - 240/2 + 0.15*(map.y*80 - settingHeight), 'bg_forest');
-  //bg2.setScrollFactor(0.15, 0.15);
+  mapCreateBackground(game, map, false, mapObjectList);
 
   // Add Tiles
   for (var px = 0; px < map.x; px++) {
     for (var py = 0; py < map.y; py++) {
-      mapCreateSingleTile(game, map, px, py, mapObjectList);
+      mapCreateSingleTile(game, map, px, py, mapObjectList, inEditor);
     }
   }
   createMapBlocks(game, map.tiles, map.x, map.y, 80, 80, groupBlocks, mapObjectList);
@@ -56,6 +47,7 @@ function mapInitialize(game, map, mapObjectList) {
   }
 
   // Create player
+  // TODO: Move to player logic file
   player = groupPlayer.create(map.playerStartX*80.0 + 40.0, map.playerStartY*80.0 + 40.0, 'player');
   player.setGravity(0, 400);
   player.setCollideWorldBounds(true);

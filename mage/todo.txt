@@ -1,2 +1,0 @@
-
-- Do not use the cursor, it is not centered

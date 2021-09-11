@@ -65,6 +65,22 @@ function enemyHandleLogic(game, enemy, curTime) {
     return false; // Calling method handles removing from list
   }
 
+  // frozed enemies
+  if (enemy.xFreeze) {
+    if (game.time.now > enemy.xFreeze) {
+      enemy.xFreeze = undefined;
+      enemy.clearTint();
+    } else {
+      // Do not reload shots while frozen
+      enemy.xLastShot1 = game.time.now;
+      enemy.xLastShot2 = game.time.now;
+      if (enemy.xInfo.immovable) return true;
+      // TODO: what coefficient?
+      enemy.setGravity(-enemy.body.velocity.x, 400);
+      return true;
+    }
+  }
+
   // TODO: Do better
   if (player == null) {
     return true;
@@ -158,15 +174,28 @@ function enemyHandleFloatMove(game, enemy, curTime, move, dx, dy) {
     throw 'No float mode defined: ' + move;
   }
 
-  desireX += move.sway * acc * Math.cos(3.14 * (curTime / 1000.0 + enemy.xRandom));
-  desireY += move.sway * acc * Math.sin(3.14 * (curTime / 1000.0 + enemy.xRandom));
+  var swayDir = enemy.xRandom * 2.0 - 1;
+  if (swayDir < 0 && swayDir > -0.25) swayDir = -0.25;
+  if (swayDir > 0 && swayDir < 0.25) swayDir = 0.25;
+
+  if (move.sway) {
+    desireX += move.sway * acc * Math.cos(3.14 * (curTime / 1000.0 + enemy.xRandom));
+    desireY += move.sway * acc * Math.sin(3.14 * (curTime / 1000.0 + enemy.xRandom));
+  }
+
+  if (move.constantSway) {
+    const csx = move.constantSway * Math.cos(swayDir * 3.14 * (curTime / 1000.0 + enemy.xRandom));
+    const csy = move.constantSway * Math.sin(swayDir * 3.14 * (curTime / 1000.0 + enemy.xRandom));
+    desireX += csx;
+    desireY += csy;
+  }
 
   enemy.setGravity(desireX - move.alpha * vx, desireY - move.alpha * vy);
 }
 
 function enemyHandleBounceMove(game, enemy, move, dx, dy) {
   // TODO:
-  enemy.setGravity(0, 400);
+  enemy.setGravity(-enemy.body.velocity.x, 400);
 }
 
 function enemyHandleWalkMove(game, enemy, move, dx, dy) {
@@ -193,6 +222,23 @@ function enemyDealDamage(game, enemy, amount, shot) {
   enemyUpdateHealth(game, enemy, -amount, shot);
 }
 
+function enemyPunch(game, enemy, px, py, shot) {
+  if (enemy.xInfo.immovable) return;
+  var enemyMass = 1.0;
+  if(enemy.xInfo.mass) enemyMass = enemy.xInfo.mass;
+  const vx = enemy.body.velocity.x;
+  const vy = enemy.body.velocity.y;
+  enemy.setVelocity(vx + px / enemyMass, vy + py / enemyMass);
+}
+
+function enemyFreeze(game, enemy, amount) {
+  if (!enemy.xFreeze) enemy.xFreeze = game.time.now;
+  var enemyMass = 1.0;
+  if(enemy.xInfo.mass) enemyMass = enemy.xInfo.mass;
+  enemy.xFreeze += amount / enemyMass;
+  enemy.setTint(0x0000ff);
+}
+
 function enemyUpdateHealth(game, enemy, amount) {
   // Note that play state loop will handle destroying enemies
   enemy.xHealth += amount;
@@ -203,10 +249,36 @@ function enemyHandleShot(game, enemy, info, type, dx1, dy1) {
   const last = type == 1 ? enemy.xLastShot1 : enemy.xLastShot2;
   const now = game.time.now;
   if (now >= last + info.time) {
-    // TODO: hande random angles etc.
-    shotShoot(game, false, info.type, enemy.x, enemy.y, dx1, dy1);
+    const [dx, dy] = enemyGetShotDirection(info, dx1, dy1);
+    shotShoot(game, false, info.type, enemy.x, enemy.y, dx, dy);
     type == 1 ? enemy.xLastShot1 = now : enemy.xLastShot2 = now;
   }
+}
+
+function enemyGetShotDirection(shotInfo, dx1, dy1) {
+  var dx = dx1;
+  var dy = dy1;
+  if (shotInfo.topBias) {
+      dy -= shotInfo.topBias;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      if (len == 0) {
+        dx = 0;
+        dy = -1;
+      } else {
+        dx = dx / len;
+        dy = dy / len;
+      }
+  }
+  if (shotInfo.randomAngle) {
+    const alpha = (Math.random() - 0.5) * shotInfo.randomAngle * Math.PI / 180.0;
+    const ox = -dy;
+    const oy = dx;
+    const cos = Math.cos(alpha);
+    const sin = Math.sin(alpha);
+    dx = dx*cos + ox*sin;
+    dy = dy*cos + oy*sin;
+  }
+  return [dx, dy];
 }
 
 function enemyhandleSpawn(game, enemy, info) {

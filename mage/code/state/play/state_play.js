@@ -13,6 +13,7 @@ var playStaticMapObjects = [];
 function stateStartPlay(game) {
   // TODO: Move to player logic
   playerHealth = 100.0;
+  playerMana = 100.0;
 
   playInitMap(game);
   uiCreate(game);
@@ -20,7 +21,7 @@ function stateStartPlay(game) {
 }
 
 function playInitMap(game) {
-  mapInitialize(game, mapBlueprint, playStaticMapObjects);
+  mapInitialize(game, mapBlueprint, playStaticMapObjects, false);
   // TODO: Add player following here
 }
 
@@ -56,7 +57,9 @@ function playEnterExit(game, exit) {
 
 function stateHandlePlay(game) {
 
+  // TODO: Do not pass game.time.now
   playerHandleLogic(game, game.time.now);
+  shotHandleLogic(game);
 
   // Handle all enemy logic
   // TODO: Does it need to be like this?
@@ -69,7 +72,8 @@ function stateHandlePlay(game) {
     }
   }
 
-  // Handle shot logic
+  // Handle UI
+  uiHandleLogic(game);
 
   // Handle state changes
   if (playState == PLAY_STATE_PLAYING) {

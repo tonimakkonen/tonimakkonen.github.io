@@ -6,11 +6,11 @@
 ///////////////////////
 
 // Used for local storage. Update this with big changes to storage.
-var VERSION = 1;
+const VERSION = '2021_09_10';
 
 // Typical HD (720p) resolution. Should work on most devices
-var settingWidth = 1280;
-var settingHeight = 720;
+const settingWidth = 1280;
+const settingHeight = 720;
 
 // TODO: Add map tile width and height
 
@@ -61,17 +61,32 @@ const GRAPH_STORM_MONSTER        = 104;
 const GRAPH_TWISTER_MONSTER      = 105;
 const GRAPH_SHINING_TREE_MONSTER = 106;
 const GRAPH_MAGMA_MONSTER        = 107;
+const GRAPH_SAND_MONSTER         = 108;
+const GRAPH_BAT_MONSTER          = 109;
+const GRAPH_MUSHROOM_MONSTER     = 110;
 
 const GRAPH_WATERMELON_PICKUP    = 201;
 const GRAPH_MUSHROOM_PICKUP      = 202;
 
-const GRAPH_ICE_SHOT             = 301;
+const GRAPH_WATER_SHOT           = 301;
 const GRAPH_ELECTRIC_SHOT        = 302;
 const GRAPH_FIRE_SHOT            = 303;
 const GRAPH_TREE_SHOT            = 304;
 const GRAPH_FIRE_STORM_SHOT      = 305;
+const GRAPH_AIR_PUNCH_SHOT       = 306;
+const GRAPH_ICE_SHOT             = 307;
+const GRAPH_SMALL_WATER_SHOT     = 308;
+const GRAPH_ROCK_SHOT            = 309;
+const GRAPH_POISON_SHOT          = 310;
 
 const GRAPH_EXIT_DOOR1           = 401;
+
+const GRAPH_ROCK1_DECORATION     = 501;
+const GRAPH_ROCK2_DECORATION     = 502;
+const GRAPH_TREE1_DECORATION     = 503;
+const GRAPH_TREE2_DECORATION     = 504;
+const GRAPH_TREE3_DECORATION     = 505;
+const GRAPH_TREE4_DECORATION     = 506;
 
 var GRAPHS = new Map();
 
@@ -155,6 +170,37 @@ GRAPHS.set(
   }
 );
 
+GRAPHS.set(
+  GRAPH_SAND_MONSTER,
+  {
+    location: 'imgs/monsters/sand_monster.png',
+    name: 'enemy_sand_monster',
+    type: GRAPH_TYPE_LEFT_RIGHT,
+    sizeX: 60,
+    sizeY: 60
+  }
+);
+
+GRAPHS.set(
+  GRAPH_BAT_MONSTER,
+  {
+    location: 'imgs/monsters/bat_monster.png',
+    name: 'enemy_bat_monster',
+    type: GRAPH_TYPE_ANIM_3,
+    sizeX: 30,
+    sizeY: 30
+  }
+);
+
+GRAPHS.set(
+  GRAPH_MUSHROOM_MONSTER,
+  {
+    location: 'imgs/monsters/mushroom_monster.png',
+    name: 'enemy_mushroom_monster',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
 // Pickups
 
 GRAPHS.set(
@@ -178,10 +224,19 @@ GRAPHS.set(
 // Shots
 
 GRAPHS.set(
-  GRAPH_ICE_SHOT,
+  GRAPH_WATER_SHOT,
   {
-    location: 'imgs/shots/ice.png',
-    name: 'shot_ice',
+    location: 'imgs/shots/water.png',
+    name: 'shot_water',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_SMALL_WATER_SHOT,
+  {
+    location: 'imgs/shots/small_water.png',
+    name: 'shot_small_water',
     type: GRAPH_TYPE_SINGLE
   }
 );
@@ -224,6 +279,44 @@ GRAPHS.set(
   }
 );
 
+GRAPHS.set(
+  GRAPH_AIR_PUNCH_SHOT,
+  {
+    location: 'imgs/shots/air_punch.png',
+    name: 'shot_air_punch',
+    type: GRAPH_TYPE_ANIM_3,
+    sizeX: 25,
+    sizeY: 25
+  }
+);
+
+GRAPHS.set(
+  GRAPH_ICE_SHOT,
+  {
+    location: 'imgs/shots/ice.png',
+    name: 'shot_ice',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_ROCK_SHOT,
+  {
+    location: 'imgs/shots/rock.png',
+    name: 'shot_rock',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_POISON_SHOT,
+  {
+    location: 'imgs/shots/poison.png',
+    name: 'shot_poison',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
 // Exits
 
 GRAPHS.set(
@@ -235,23 +328,79 @@ GRAPHS.set(
   }
 );
 
+// Decorations
+
+GRAPHS.set(
+  GRAPH_ROCK1_DECORATION,
+  {
+    location: 'imgs/decorations/rock1.png',
+    name: 'decoration_rock1',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_ROCK2_DECORATION,
+  {
+    location: 'imgs/decorations/rock2.png',
+    name: 'decoration_rock2',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_TREE1_DECORATION,
+  {
+    location: 'imgs/decorations/tree1.png',
+    name: 'decoration_tree1',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_TREE2_DECORATION,
+  {
+    location: 'imgs/decorations/tree2.png',
+    name: 'decoration_tree2',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_TREE3_DECORATION,
+  {
+    location: 'imgs/decorations/tree3.png',
+    name: 'decoration_tree3',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_TREE4_DECORATION,
+  {
+    location: 'imgs/decorations/tree4.png',
+    name: 'decoration_tree4',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
 /////////////////////////////////////////////////////////
 // All the different layer types and various z indexes //
 /////////////////////////////////////////////////////////
 
-
-const LAYER_TYPE_TOP        = 1;  // layers with a top thingy (e.g. grass)
-const LAYER_TYPE_SYMMETRIC  = 2;  // symmetric layers
-
-
-const LAYER_GROUND  = 1;
-const LAYER_CAVE    = 2;
-const LAYER_ROCK    = 3;
-
-
-// Z location of all game objects
 const Z_ACTION = 1.0;
 
+const LAYER_TYPE_TOP        = 1;
+const LAYER_TYPE_SYMMETRIC  = 2;
+const LAYER_TYPE_SINGLE     = 3;
+const LAYER_TYPE_INVISIBLE  = 4; // invisible blocking layer, used for some effect
+
+const LAYER_GROUND    = 1;
+const LAYER_CAVE      = 2;
+const LAYER_ROCK      = 3;
+const LAYER_SNOW      = 4;
+const LAYER_VOID      = 5;
+const LAYER_INVISIBLE = 6;
 
 var LAYERS = new Map();
 
@@ -264,7 +413,7 @@ LAYERS.set(
     block: true,
     zInternal: -0.3,
     zBlock: -0.3,
-    zTop: 2.0
+    zTop: 2.1
   }
 );
 
@@ -287,174 +436,42 @@ LAYERS.set(
     name: 'rock',
     locationBase: 'imgs/ground/rock',
     block: true,
-    zInternal: -0.1,
-    zBlock: -0.1
+    zInternal: -0.4,
+    zBlock: -0.4
   }
 );
 
-
-
-//////////////////////////////////
-// All the different shot types //
-//////////////////////////////////
-
-
-const SHOT_ICE        = 1;
-const SHOT_ELECTRIC   = 2;
-const SHOT_FIRE       = 3;
-const SHOT_TREE       = 4;
-const SHOT_FIRE_STORM = 5;
-
-
-var SHOTS = new Map();
-
-// TODO: Gravity and velocity
-
-SHOTS.set(
-  SHOT_ICE,
+LAYERS.set(
+  LAYER_SNOW,
   {
-    graph: GRAPH_ICE_SHOT,
-    damage: 10,
-    type: MAGIC_TYPE_WATER,
-    velocity: 400,
-    grav: 1.0
-  }
-)
-
-SHOTS.set(
-  SHOT_ELECTRIC,
-  {
-    graph: GRAPH_ELECTRIC_SHOT,
-    damage: 20,
-    type: MAGIC_TYPE_AIR,
-    velocity: 600,
-    grav: 0.0,
-    bounce: { count: 5, amount: 0.9 }
-  }
-)
-
-SHOTS.set(
-  SHOT_FIRE,
-  {
-    graph: GRAPH_FIRE_SHOT,
-    damage: 20,
-    type: MAGIC_TYPE_FIRE,
-    velocity: 600,
-    grav: 0.5
-  }
-)
-
-SHOTS.set(
-  SHOT_TREE,
-  {
-    graph: GRAPH_TREE_SHOT,
-    damage: 25,
-    type: MAGIC_TYPE_EARTH,
-    velocity: 250,
-    grav: 0.8,
-    duration: 2000
-  }
-)
-
-SHOTS.set(
-  SHOT_FIRE_STORM,
-  {
-    graph: GRAPH_FIRE_STORM_SHOT,
-    damage: 25,
-    type: MAGIC_TYPE_FIRE,
-    velocity: 400,
-    grav: 0.5,
-    spawn: { type: SHOT_FIRE, amount: 20, velocity: 0.5}
-  }
-)
-
-
-///////////////////////////////
-// All different enemy types //
-///////////////////////////////
-
-// TODO: Simplify names?
-const ENEMY_FOREST_MONSTER         = 1;
-const ENEMY_BURNING_MONSTER        = 2;
-const ENEMY_ELECTRIC_MONSTER       = 3;
-const ENEMY_STORM_MONSTER          = 4;
-const ENEMY_TWISTER_MONSTER        = 5;
-const ENEMY_SHINING_TREE_MONSTER   = 6;
-const ENEMY_MAGMA_MONSTER          = 7;
-
-
-var ENEMIES = new Map();
-
-ENEMIES.set(
-  ENEMY_FOREST_MONSTER,
-  {
-    graph: GRAPH_FOREST_MONSTER,
-    moveWalk: { maxSpeed: 60, alpha: 1},
-    moveJump: { delay: 3000, velocity: 300 }, // TODO: Add randomness
-    shoot1: { type: SHOT_TREE, time: 1000, towards: true, randomAngle: 40.0, topBias: 20.0 },
-    health: 100
+    type: LAYER_TYPE_TOP,
+    name: 'snow',
+    locationBase: 'imgs/ground/snow',
+    block: true,
+    zInternal: -0.2,
+    zBlock: -0.2,
+    zTop: 2.1
   }
 );
 
-ENEMIES.set(
-  ENEMY_BURNING_MONSTER,
+LAYERS.set(
+  LAYER_VOID,
   {
-    graph: GRAPH_BURNING_MONSTER,
-    moveBounce: { maxSpeed: 80, alpha: 1, jumpTime: 1, jumpSpeed: 240},
-    health: 50,
-    shoot1: { type: SHOT_FIRE, time: 1000, towards: true }
+    type: LAYER_TYPE_SINGLE,
+    name: 'void_layer',
+    locationBase: 'imgs/ground/void.png',
+    block: false,
+    zInternal: 2.5,
+    zBlock: 2.5
   }
 );
 
-ENEMIES.set(
-  ENEMY_ELECTRIC_MONSTER,
+LAYERS.set(
+  LAYER_INVISIBLE,
   {
-    graph: GRAPH_ELECTRIC_MONSTER,
-    moveFloat: { maxSpeed: 100, alpha: 1, minDistance: 160, maxDistance: 320, sway: 0.3, towards: true},
-    health: 40,
-    shoot1: { type: SHOT_ELECTRIC, time: 2500, towards: true }
-  }
-);
-
-ENEMIES.set(
-  ENEMY_STORM_MONSTER,
-  {
-    graph: GRAPH_STORM_MONSTER,
-    moveFloat: { maxSpeed: 200, alpha: 1, minDistance: 260, maxDistance: 340, sway: 0.2, above: true, margin: 20},
-    health: 80,
-    shoot1: { type: SHOT_ICE, time: 1000, towards: true }
-  }
-);
-
-ENEMIES.set(
-  ENEMY_TWISTER_MONSTER,
-  {
-    graph: GRAPH_TWISTER_MONSTER,
-    moveWalk: { maxSpeed: 500, alpha: 1},
-    moveJump: { delay: 1500, velocity: 400 },
-    gravity: 50,
-    health: 40,
-    shoot1: { type: SHOT_ICE, time: 1000, towards: true }
-  }
-);
-
-ENEMIES.set(
-  ENEMY_SHINING_TREE_MONSTER,
-  {
-    graph: GRAPH_SHINING_TREE_MONSTER,
-    immovable: true, // TODO: Make this into effect
-    health: 1000,
-    spawn: { type: ENEMY_FOREST_MONSTER, time: 5000 }
-  }
-);
-
-ENEMIES.set(
-  ENEMY_MAGMA_MONSTER,
-  {
-    graph: GRAPH_MAGMA_MONSTER,
-    health: 250,
-    moveWalk: { maxSpeed: 30, alpha: 1},
-    shoot1: { type: SHOT_FIRE_STORM, time: 1000, towards: true }
+    type: LAYER_TYPE_INVISIBLE,
+    text: 'IB',
+    block: true
   }
 );
 
@@ -491,6 +508,94 @@ PICKUPS.set(
 // All the different decoration //
 //////////////////////////////////
 
-// TODO:
+const DECORATION_ROCK1 = 1;
+const DECORATION_ROCK2 = 2;
+const DECORATION_TREE1 = 3;
+const DECORATION_TREE2 = 4;
+const DECORATION_TREE3 = 5;
+const DECORATION_TREE4 = 6;
 
 var DECORATIONS = new Map();
+
+DECORATIONS.set(
+  DECORATION_ROCK1,
+  {
+    graph: GRAPH_ROCK1_DECORATION,
+    z: 2.0
+  }
+)
+
+DECORATIONS.set(
+  DECORATION_ROCK2,
+  {
+    graph: GRAPH_ROCK2_DECORATION,
+    z: 2.0
+  }
+)
+
+DECORATIONS.set(
+  DECORATION_TREE1,
+  {
+    graph: GRAPH_TREE1_DECORATION,
+    z: -0.05
+  }
+)
+
+DECORATIONS.set(
+  DECORATION_TREE2,
+  {
+    graph: GRAPH_TREE2_DECORATION,
+    z: -0.05
+  }
+)
+
+DECORATIONS.set(
+  DECORATION_TREE3,
+  {
+    graph: GRAPH_TREE3_DECORATION,
+    z: -0.05
+  }
+)
+
+DECORATIONS.set(
+  DECORATION_TREE4,
+  {
+    graph: GRAPH_TREE4_DECORATION,
+    z: -0.025
+  }
+)
+
+///////////////////////////////////
+// All the different backgrounds //
+///////////////////////////////////
+
+// TODO: Load differently.. define set of resources etc..
+
+const BACKGROUND_EMPTY     = 1;
+const BACKGROUND_MOUNTAINS = 2;
+const BACKGROUND_NIGHT     = 3;
+
+var BACKGROUNDS = new Map();
+
+BACKGROUNDS.set(
+  BACKGROUND_EMPTY,
+  {
+    editorGrey: true // so that you can see when adding "void" block
+  }
+)
+
+BACKGROUNDS.set(
+  BACKGROUND_MOUNTAINS,
+  {
+    name: 'bg_mountains',
+    location: 'imgs/bg_mountains.jpg'
+  }
+)
+
+BACKGROUNDS.set(
+  BACKGROUND_NIGHT,
+  {
+    name: 'bg_night',
+    location: 'imgs/bg_sky.jpg' // TODO: rename
+  }
+)
