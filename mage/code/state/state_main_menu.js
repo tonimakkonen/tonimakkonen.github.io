@@ -12,7 +12,9 @@ function stateStartMainMenu(game) {
   mmAddNewText(game, 'Start on random map (easy)');
   mmAddNewText(game, 'Start on random map (difficult)');
   mmAddNewText(game, 'Start on random map (super big)');
-  mmAddNewText(game, 'Test map 1: The descent');
+  mmAddNewText(game, 'Test map 1: The descent (difficult)');
+  mmAddNewText(game, 'Test map 2: Winter maze  (difficult)');
+  mmAddNewText(game, 'Test map 3: Peaceful forest');
   mmAddNewText(game, 'Editor');
 }
 
@@ -73,6 +75,14 @@ function mmPushButton(game, option) {
     mmDestroy(game);
     return GAME_MODE_PLAYING;
   } else if (option == 4) {
+    mapBlueprint = { ...testMapWinterMaze };
+    mmDestroy(game);
+    return GAME_MODE_PLAYING;
+  } else if (option == 5) {
+    mapBlueprint = { ...testMapForest };
+    mmDestroy(game);
+    return GAME_MODE_PLAYING;
+  } else if (option == 6) {
     mmDestroy(game);
     return GAME_MODE_MAP_EDITOR;
   } else {
