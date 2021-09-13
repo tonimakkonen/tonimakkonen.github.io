@@ -12,6 +12,7 @@ function mapCreateDummy(sizeX, difficulty) {
   var pickups = new Array(mapX*mapY).fill(0);
   var decorations = new Array(mapX*mapY).fill(0);
   var decorationSeed = new Array(mapX*mapY).fill(0);
+  var signs = new Array(0);
   // TODO: decorations
 
   // create floor

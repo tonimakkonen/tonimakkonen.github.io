@@ -48,7 +48,6 @@ function mapCreateSingleTile(game, map, px, py, list, inEditor) {
   } else if (layer.type == LAYER_TYPE_SINGLE) {
     mapHandleSingle(game, layer, list, px, py, cont);
   } else if (layer.type == LAYER_TYPE_INVISIBLE) {
-    console.log(inEditor);
     if (inEditor) mapHandleInvisible(game, layer, list, px, py, cont);
   } else {
     throw 'Unkown layer type: ' + layer.type;

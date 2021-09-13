@@ -3,6 +3,12 @@
 
 // Player variables
 
+const playerJumpAmount = 250;
+
+// This is used by a lot of effects
+var playerLocation = { x: 0, y: 0}
+
+
 var player = null;
 var playerHealth = 100.0;
 var playerMana = 100.0;
@@ -17,6 +23,9 @@ var playerRightSpellLast = 0;
 function playerHandleLogic(game, curTime) {
 
   if (player == null) return;
+
+  playerLocation.x = player.x;
+  playerLocation.y = player.y;
 
   if (player.xPoison) {
     if (game.time.now > player.xPoison) {
@@ -47,10 +56,10 @@ function playerHandleLogic(game, curTime) {
     //player.setVelocityX(0);
   }
 
+  // Handle jumping
   var grav = 400;
-
   if (jump && tdown) {
-    player.setVelocityY(-250);
+    player.setVelocityY(-playerJumpAmount);
   }
   if (jump) {
     if (vy < -120) {
@@ -83,10 +92,7 @@ function playerHandleLogic(game, curTime) {
   // Regeneration
   if (playerLastRegen == null) playerLastRegen = game.time.now;
   const dt = game.time.now - playerLastRegen;
-  var healAmount = 2.0;
-  if (player.xPoison) healAmount -= 5;
-  // TODO: Make use of more generic player propertioes
-  playerHeal(game, dt * healAmount / 1000.0); // 2 per sec
+  if (player.xPoison) playerDealDamage(game, dt * 3.0 / 1000.0);
   playerUpdateMana(game, dt * 5.0 / 1000.0); // 5 per sec
   playerLastRegen = game.time.now;
 }
@@ -110,11 +116,25 @@ function playerHandleSpell(game, spell, last, dx, dy) {
   if (curTime < last + reloadTime) return last;
   const manaCost = spell.cost;
   if (playerUseManaIfCan(game, manaCost)) {
-    if (spell.shoot) shotShoot(game, true, spell.shoot, player.x, player.y, dx, dy);
+    if (spell.shoot) shotShoot(game, true, spell.shoot, player.x, player.y, dx, dy, true);
     if (spell.effect) shotHandleEffect(game, spell.effect, player.x, player.y, dx, dy);
+    if (spell.jump) playerAddJump(game, spell.jump);
+    if (spell.heal) playerHeal(game, spell.heal);
     return curTime;
   }
   return last;
+}
+
+// Handle fly spell effect
+// Note: if we're one the ground, add extra jump
+function playerAddJump(game, amount) {
+  if (player == null) return;
+  const cvx = player.body.velocity.x;
+  const cvy = player.body.velocity.y;
+  var delta = -amount;
+  if (player.body.blocked.down) delta -= playerJumpAmount;
+  console.log(delta);
+  player.setVelocity(cvx, cvy + delta);
 }
 
 function playerHeal(game, amount) {

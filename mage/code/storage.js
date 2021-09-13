@@ -16,7 +16,12 @@ function storageLoad() {
       localStorage.clear();
     } else {
       console.log('Loading local storage. If this fails, clear local storage.');
-      mapBlueprint =  JSON.parse(localStorage.getItem('mapBlueprint'));
+
+      const mapBlueprintJson = localStorage.getItem('mapBlueprint');
+      mapBlueprint =  JSON.parse(mapBlueprintJson);
+
+      const playerProgressJson = localStorage.getItem('playerProgress');
+      if (playerProgressJson != null) playerProgress = JSON.parse(playerProgressJson);
     }
   }
   localStorage.setItem('version', VERSION);
@@ -25,4 +30,9 @@ function storageLoad() {
 function storageSaveMap() {
   console.log('saving map to local storage');
   localStorage.setItem('mapBlueprint', JSON.stringify(mapBlueprint));
+}
+
+function storageSavePlayerProgress() {
+  console.log('saving player progress to local storage');
+  localStorage.setItem('playerProgress', JSON.stringify(mapBlueprint));
 }

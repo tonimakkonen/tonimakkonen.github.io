@@ -34,6 +34,8 @@ function playDestroyPhaserObjects(game) {
   enemyDestroyAll();
   pickupDestroyAll();
   shotDestroyAll();
+  signDestroyAll();
+  infoDestroyAll();
 
   // Destroy UI
   uiDestroy();
@@ -71,6 +73,9 @@ function stateHandlePlay(game) {
       listEnemies.splice(i, 1);
     }
   }
+
+  signHandleLogic(game);
+  infoHandleLogic(game);
 
   // Handle UI
   uiHandleLogic(game);

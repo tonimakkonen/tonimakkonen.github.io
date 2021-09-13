@@ -24,7 +24,8 @@ SHOTS.set(
     spawn: { type: SHOT_SMALL_WATER, amount: 4, velocity: 0.5},
     velocity: 500,
     grav: 1.0,
-    punch: 0.2
+    punch: 0.2,
+    sound: 'sound_water1'
   }
 )
 
@@ -47,7 +48,8 @@ SHOTS.set(
     type: MAGIC_TYPE_WATER,
     velocity: 600,
     grav: 0.2,
-    freeze: 5000.0
+    freeze: 5000.0,
+    sound: 'sound_freeze'
   }
 )
 
@@ -55,11 +57,12 @@ SHOTS.set(
   SHOT_ELECTRIC,
   {
     graph: GRAPH_ELECTRIC_SHOT,
-    damage: 25,
+    damage: 30,
     type: MAGIC_TYPE_AIR,
     velocity: 600,
     grav: 0.0,
-    bounce: { count: 5, amount: 0.9 }
+    bounce: { count: 10, amount: 1.0 },
+    sound: 'sound_electric'
   }
 )
 
@@ -70,7 +73,8 @@ SHOTS.set(
     damage: 20,
     type: MAGIC_TYPE_FIRE,
     velocity: 600,
-    grav: 0.5
+    grav: 0.5,
+    sound: 'sound_fire1'
   }
 )
 
@@ -83,7 +87,8 @@ SHOTS.set(
     velocity: 350,
     grav: 0.9,
     duration: 2000,
-    punch: 0.1
+    punch: 0.1,
+    sound: 'sound_stick'
   }
 )
 
@@ -96,7 +101,8 @@ SHOTS.set(
     velocity: 400,
     grav: 0.5,
     spawn: { type: SHOT_FIRE, amount: 10, velocity: 0.5},
-    punch: 0.2
+    punch: 0.2,
+    sound: 'sound_fire2'
   }
 )
 
@@ -104,11 +110,12 @@ SHOTS.set(
   SHOT_AIR_PUNCH,
   {
     graph: GRAPH_AIR_PUNCH_SHOT,
-    damage: 10,
+    damage: 12.5,
     type: MAGIC_TYPE_AIR,
     velocity: 600,
     grav: 0.0,
-    punch: 0.7
+    punch: 0.7,
+    sound: 'sound_wind'
   }
 )
 
@@ -119,9 +126,10 @@ SHOTS.set(
     damage: 30,
     type: MAGIC_TYPE_EARTH,
     velocity: 500,
-    bounce: { count: 50, amount: 0.7 },
+    bounce: { count: 50, amount: 0.4 },
     grav: 1.0,
-    punch: 0.6
+    punch: 0.6,
+    sound: 'sound_rock',
   }
 )
 
@@ -133,6 +141,8 @@ SHOTS.set(
     poison: 5000,
     type: MAGIC_TYPE_EARTH,
     velocity: 300,
-    grav: 0.5
+    bounce: { count: 3, amount: 0.5 },
+    grav: 0.5,
+    sound: 'sound_poison'
   }
 )

@@ -20,8 +20,15 @@ function pickupCollect(game, pickup) {
   const canHeal = pickup.xInfo.heal && playerHealth < 100.0;
   const canIncreaseMana = pickup.xInfo.mana && playerMana < 100.0;
   if (canHeal || canIncreaseMana) {
-    if (canHeal) playerHeal(game, pickup.xInfo.heal);
-    if (canIncreaseMana) playerUpdateMana(game, pickup.xInfo.mana);
+    const delta = canHeal && canIncreaseMana ? 10.0 : 0.0;
+    if (canHeal) {
+      playerHeal(game, pickup.xInfo.heal);
+      infoCreateText(game, pickup.x, pickup.y - delta, '+' + pickup.xInfo.heal.toString(10), '#00FF00', 1500);
+    }
+    if (canIncreaseMana) {
+      playerUpdateMana(game, pickup.xInfo.mana);
+      infoCreateText(game, pickup.x, pickup.y + delta, '+' + pickup.xInfo.mana.toString(10), '#0000FF', 1500);
+    }
     pickup.destroy();
   }
 }

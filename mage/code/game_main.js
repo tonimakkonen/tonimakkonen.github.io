@@ -34,22 +34,21 @@ var gameMode = GAME_MODE_NONE;
 var gameModeLast = gameMode;
 
 var groupBlocks;
+var groupPlayerBlocks; // some enemies block players
 var groupPlayer;
 var groupEnemies;
 var groupPlayerShots;
 var groupEnemyShots;
 var groupPickups;
 var groupExits;
-var listMapObjects = []; // All the current map objects to be deleted..
-var listEnemies = []; // List of all enemies
-
-
-// TODO: Think about player properties
-
+var groupSigns;
+var listEnemies = []; // TODO: We do not need this
 
 // Current map blueprint
-// Used by editor or by
 var mapBlueprint = null;
+
+// Current player progress
+var playerProgress = { knownSpells: [], level: 'intro' }
 
 // Run local storage
 storageLoad();
@@ -69,14 +68,17 @@ function create() {
 
   // Set up phaser3 wiring
   groupBlocks = this.physics.add.staticGroup();
+  groupPlayerBlocks = this.physics.add.staticGroup();
   groupPlayer = this.physics.add.group();
   groupEnemies = this.physics.add.group();
   groupPlayerShots = this.physics.add.group();
   groupEnemyShots = this.physics.add.group();
   groupPickups = this.physics.add.group();
   groupExits = this.physics.add.group();
+  groupSigns = this.physics.add.staticGroup();
 
   this.physics.add.collider(groupBlocks, groupPlayer);
+  this.physics.add.collider(groupPlayerBlocks, groupPlayer);
   this.physics.add.collider(groupBlocks, groupEnemies);
   this.physics.add.collider(groupBlocks, groupPickups);
   this.physics.add.collider(groupBlocks, groupPlayerShots, mainShotHitWall, null, this);
@@ -86,7 +88,6 @@ function create() {
   this.physics.add.overlap(groupEnemyShots, groupPlayer, mainShotHitPlayer, null, this);
   this.physics.add.overlap(groupPickups, groupPlayer, mainCollectedPickup, null, this);
   this.physics.add.overlap(groupExits, groupPlayer, mainEnterExit, null, this);
-
 
 
   // TODO
@@ -129,6 +130,9 @@ function update() {
       throw 'Switching to unknown game mode: ' + newMode;
     }
   }
+
+  // Handle requested sounds
+  soundHandleLogic(this);
 
 }
 

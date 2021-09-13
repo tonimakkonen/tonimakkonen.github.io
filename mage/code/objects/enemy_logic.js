@@ -8,6 +8,7 @@ function enemyDestroyAll() {
 }
 
 function enemyDestroy(enemy) {
+  if (enemy.xHealthBar) enemy.xHealthBar.destroy();
   enemy.destroy();
 }
 
@@ -23,8 +24,19 @@ function enemyCreate(game, enemyType, x, y) {
   if (!graph) throw 'Unkown graph: ' + info.graph;
 
   var newEnemy = groupEnemies.create(x, y, graph.name);
+  if (info.immovable) {
+    newEnemy.setImmovable(true);
+    groupPlayerBlocks.add(newEnemy);
+  }
   listEnemies.push(newEnemy);
   newEnemy.setDepth(Z_ACTION);
+
+  // Add health bar
+  const healthBar = game.add.rectangle(x, y - newEnemy.height / 2.0, newEnemy.width, 6.0, 0xff0000);
+  healthBar.setDepth(9.0); // TODO
+  healthBar.setAlpha(0.5);
+  healthBar.setVisible(false);
+  newEnemy.xHealthBar = healthBar;
 
   // Add some variables
   newEnemy.xType = enemyType;
@@ -65,6 +77,9 @@ function enemyHandleLogic(game, enemy, curTime) {
     return false; // Calling method handles removing from list
   }
 
+  // change health bar location
+  if (enemy.xHealthBar) enemy.xHealthBar.setPosition(enemy.x, enemy.y - enemy.height / 2.0);
+
   // frozed enemies
   if (enemy.xFreeze) {
     if (game.time.now > enemy.xFreeze) {
@@ -81,14 +96,9 @@ function enemyHandleLogic(game, enemy, curTime) {
     }
   }
 
-  // TODO: Do better
-  if (player == null) {
-    return true;
-  }
-
   // Towards player
-  const dx = player.x - enemy.x;
-  const dy = player.y - enemy.y;
+  const dx = playerLocation.x - enemy.x;
+  const dy = playerLocation.y - enemy.y;
   var len = Math.sqrt(dx*dx + dy*dy);
   if (len == 0) len = 1.0; // NaN guard
   const dx1 = dx / len;
@@ -218,6 +228,8 @@ function enemyHandleJump(game, enemy, move, dx, dy) {
 }
 
 function enemyDealDamage(game, enemy, amount, shot) {
+  infoCreateText(game, shot.x, shot.y, amount.toString(10), '#FF0000', 500);
+  // TODO: Remove..
   // TODO: Handle shot types and other effects
   enemyUpdateHealth(game, enemy, -amount, shot);
 }
@@ -242,7 +254,12 @@ function enemyFreeze(game, enemy, amount) {
 function enemyUpdateHealth(game, enemy, amount) {
   // Note that play state loop will handle destroying enemies
   enemy.xHealth += amount;
-  // Update health bar if any
+  if (enemy.xHealthBar) {
+    if (enemy.xHealth < enemy.xInfo.health) enemy.xHealthBar.setVisible(true);
+    else enemy.xHealthBar.setVisible(false);
+    const newWitdh = enemy.width * Math.max(0.0, enemy.xHealth) / enemy.xInfo.health;
+    enemy.xHealthBar.setSize(newWitdh, enemy.xHealthBar.height);
+  }
 }
 
 function enemyHandleShot(game, enemy, info, type, dx1, dy1) {
@@ -250,7 +267,7 @@ function enemyHandleShot(game, enemy, info, type, dx1, dy1) {
   const now = game.time.now;
   if (now >= last + info.time) {
     const [dx, dy] = enemyGetShotDirection(info, dx1, dy1);
-    shotShoot(game, false, info.type, enemy.x, enemy.y, dx, dy);
+    shotShoot(game, false, info.type, enemy.x, enemy.y, dx, dy, true);
     type == 1 ? enemy.xLastShot1 = now : enemy.xLastShot2 = now;
   }
 }

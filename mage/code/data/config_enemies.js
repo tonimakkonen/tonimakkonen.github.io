@@ -118,7 +118,7 @@ ENEMIES.set(
     graph: GRAPH_BAT_MONSTER,
     moveFloat: { maxSpeed: 150, alpha: 2, minDistance: 80, maxDistance: 320, constantSway: 600, towards: true},
     health: 25,
-    shoot1: { type: SHOT_FIRE, time: 2500 },
+    shoot1: { type: SHOT_FIRE, time: 2500, randomAngle: 15.0 },
     mass: 0.4
   }
 );

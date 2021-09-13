@@ -14,7 +14,8 @@ function mapCreateEmpty(x, y) {
     playerStartX: 0,
     playerStartY: 0,
     exitX: 1,
-    exitY: 0
+    exitY: 0,
+    signs: []
   };
 }
 
@@ -34,7 +35,7 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
 
   // Note that enemies and such non-static content are not added into map object list
 
-  // Add enemies and pickups
+  // Add enemies, pickups, and signs
   for (var px = 0; px < map.x; px++) {
     for (var py = 0; py < map.y; py++) {
       const cx = px*80.0 + 40.0;
@@ -43,6 +44,8 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
       if (newEnemy != 0) enemyCreate(game, newEnemy, cx, cy);
       const newPickup = map.pickups[px + py*map.x];
       if (newPickup != 0) pickupCreate(game, newPickup, cx, cy);
+      const [curSign, _signIndex] = mapGetSign(map.signs, px, py);
+      if (curSign != null) signCreate(game, curSign, px, py);
     }
   }
 
@@ -59,7 +62,7 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
 
   // Follow player
   // TODO: Does this need to change?
-  // TODO: Maybe this should be in ppay?
+  // TODO: Maybe this should be in player logic?
   game.physics.world.setBounds(0, 0, map.x*80, map.y*80);
   game.cameras.main.startFollow(player);
   game.cameras.main.setBounds(0, 0, map.x*80, map.y*80);
@@ -180,4 +183,13 @@ function mapIsBlocked(value) {
   var layer = LAYERS.get(value);
   if (!layer) throw 'Unknown layer: ' + layer;
   return layer.block;
+}
+
+// Get the sign for a given position or null of nothing
+function mapGetSign(signs, px, py) {
+  if (!signs) return [null, -1];
+  for (var i = 0; i < signs.length; i++) {
+    if (signs[i].x == px && signs[i].y == py) return [signs[i], i];
+  }
+  return [null, -1];
 }

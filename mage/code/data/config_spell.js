@@ -13,6 +13,9 @@ const SPELL_ICE            = 6;
 const SPELL_AIR_PUNCH      = 7;
 const SPELL_RAIN           = 8;
 const SPELL_ROCK           = 9;
+const SPELL_FLY            = 10;
+const SPELL_REGENERATE     = 11;
+const SPELL_HELLFIRE       = 12;
 
 const SPELLS_MAX_X = 3;
 const SPELLS_MAX_Y = 2;
@@ -32,8 +35,8 @@ SPELLS.set(
     image: 'spell_dummy',
     type: MAGIC_TYPE_AIR,
     shoot: SHOT_AIR_PUNCH,
-    cost: 10,
-    reload: 400
+    cost: 7.5,
+    reload: 350
   }
 )
 
@@ -46,8 +49,22 @@ SPELLS.set(
     image: 'spell_dummy',
     type: MAGIC_TYPE_AIR,
     shoot: SHOT_ELECTRIC,
-    cost: 15,
+    cost: 10,
     reload: 500
+  }
+)
+
+SPELLS.set(
+  SPELL_FLY,
+  {
+    name: 'Fly (TODO)',
+    posX: 0,
+    posY: 2,
+    image: 'spell_dummy',
+    type: MAGIC_TYPE_AIR,
+    jump: 125,
+    cost: 35,
+    reload: 1000
   }
 )
 
@@ -76,8 +93,8 @@ SPELLS.set(
     image: 'spell_dummy',
     type: MAGIC_TYPE_WATER,
     shoot: SHOT_ICE,
-    cost: 25,
-    reload: 1000
+    cost: 15,
+    reload: 600
   }
 )
 
@@ -120,8 +137,22 @@ SPELLS.set(
     image: 'spell_dummy',
     type: MAGIC_TYPE_FIRE,
     shoot: SHOT_FIRE_STORM,
-    cost: 25,
+    cost: 30,
     reload: 1000
+  }
+)
+
+SPELLS.set(
+  SPELL_HELLFIRE,
+  {
+    name: 'Hellfire (TODO)',
+    posX: 2,
+    posY: 2,
+    image: 'spell_dummy',
+    type: MAGIC_TYPE_FIRE,
+    shoot: SHOT_FIRE,
+    cost: 2.5,
+    reload: 25
   }
 )
 
@@ -137,7 +168,7 @@ SPELLS.set(
     type: MAGIC_TYPE_EARTH,
     shoot: SHOT_TREE,
     cost: 5,
-    reload: 200
+    reload: 250
   }
 )
 
@@ -150,7 +181,21 @@ SPELLS.set(
     image: 'spell_dummy',
     type: MAGIC_TYPE_EARTH,
     shoot: SHOT_ROCK,
-    cost: 15,
+    cost: 10,
+    reload: 500
+  }
+)
+
+SPELLS.set(
+  SPELL_REGENERATE,
+  {
+    name: 'Regenerate',
+    posX: 3,
+    posY: 2,
+    image: 'spell_dummy',
+    type: MAGIC_TYPE_EARTH,
+    heal: 10,
+    cost: 25,
     reload: 500
   }
 )

@@ -13,6 +13,8 @@ var inputPageDown;
 // TODO: This needs to be better
 var inputLeftClickLast = false;
 var inputLeftClick = false;
+var inputRightClickLast = false;
+var inputRightClick = false;
 var inputTabClickLast = false;
 var inputTabClick = false;
 
@@ -22,6 +24,7 @@ function inputInitialize(game) {
   game.input.mouse.disableContextMenu();
 
   // Set fullscreen button
+  // TODO: DO We NEED this
   game.input.keyboard.on('keydown-' + 'F10',
   function (event) {
     console.log('F10 pressed');
@@ -54,13 +57,21 @@ function inputInitialize(game) {
 function inputUpdate(game) {
 
   // TODO: Has to be a better way
-  const curValue = game.input.activePointer.leftButtonDown();
-  if (curValue && !inputLeftClickLast) {
+  const curLeft = game.input.activePointer.leftButtonDown();
+  if (curLeft && !inputLeftClickLast) {
     inputLeftClick = true;
   } else {
     inputLeftClick = false;
   }
-  inputLeftClickLast = curValue;
+  inputLeftClickLast = curLeft;
+
+  const curRight = game.input.activePointer.rightButtonDown();
+  if (curRight && !inputRightClickLast) {
+    inputRightClick = true;
+  } else {
+    inputRightClick = false;
+  }
+  inputRightClickLast = curRight;
 
   const curTab = inputTab.isDown;
   if (curTab && !inputTabClickLast) {
