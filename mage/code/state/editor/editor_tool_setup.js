@@ -38,6 +38,7 @@ EDITOR_MENU.add({x: 5, y: 0, special: EDITOR_SPECIAL_NEW, text: 'New map'});
 EDITOR_MENU.add({x: 6, y: 0, special: EDITOR_SPECIAL_BG, option: BACKGROUND_EMPTY, text: 'BG 0'});
 EDITOR_MENU.add({x: 7, y: 0, special: EDITOR_SPECIAL_BG, option: BACKGROUND_MOUNTAINS, text: 'BG 1'});
 EDITOR_MENU.add({x: 8, y: 0, special: EDITOR_SPECIAL_BG, option: BACKGROUND_NIGHT, text: 'BG 2'});
+EDITOR_MENU.add({x: 9, y: 0, special: EDITOR_SPECIAL_BG, option: BACKGROUND_FOREST, text: 'BG 3'});
 
 // Second row, ground options
 EDITOR_MENU.add({x: 0, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_GROUND, image: 'ground_full'});
@@ -46,6 +47,7 @@ EDITOR_MENU.add({x: 2, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_ROCK, image
 EDITOR_MENU.add({x: 3, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_SNOW, image: 'snow_full'});
 EDITOR_MENU.add({x: 4, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_VOID, image: 'void_layer'});
 EDITOR_MENU.add({x: 5, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_INVISIBLE, text: 'IB'});
+EDITOR_MENU.add({x: 6, y: 2, tool: EDITOR_TOOL_GROUND, option: LAYER_SAND, image: 'sand_full'});
 
 // Decorations
 EDITOR_MENU.add({x: 0, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_ROCK1, image: 'decoration_rock1'});
@@ -54,6 +56,8 @@ EDITOR_MENU.add({x: 2, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_TR
 EDITOR_MENU.add({x: 3, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_TREE2, image: 'decoration_tree2', scale: 0.3});
 EDITOR_MENU.add({x: 4, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_TREE3, image: 'decoration_tree3', scale: 0.3});
 EDITOR_MENU.add({x: 5, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_TREE4, image: 'decoration_tree4', scale: 0.5});
+EDITOR_MENU.add({x: 6, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_TREE5, image: 'decoration_tree5', scale: 0.5});
+EDITOR_MENU.add({x: 7, y: 3, tool: EDITOR_TOOL_DECORATION, option: DECORATION_CACTUS1, image: 'decoration_cactus1'});
 
 // Enemies
 EDITOR_MENU.add({x: 0, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_FOREST_MONSTER, image: 'enemy_forest_monster'});
@@ -66,10 +70,15 @@ EDITOR_MENU.add({x: 6, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_MAGMA_MONSTE
 EDITOR_MENU.add({x: 7, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_SAND_MONSTER, image: 'enemy_sand_monster'});
 EDITOR_MENU.add({x: 8, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_BAT_MONSTER, image: 'enemy_bat_monster'});
 EDITOR_MENU.add({x: 9, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_MUSHROOM_MONSTER, image: 'enemy_mushroom_monster'});
+EDITOR_MENU.add({x: 10, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_FROST_MONSTER, image: 'enemy_frost_monster'});
+EDITOR_MENU.add({x: 11, y: 4, tool: EDITOR_TOOL_ENEMY, option: ENEMY_BUG_MONSTER, image: 'enemy_bug_monster'});
 
 // Pickups
 EDITOR_MENU.add({x: 0, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_WATERMELON, image: 'pickup_watermelon'});
-EDITOR_MENU.add({x: 1, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_MUSHROOM, image: 'pickup_mushroom'});
+EDITOR_MENU.add({x: 1, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_MUSHROOM1, image: 'pickup_mushroom1'});
+EDITOR_MENU.add({x: 2, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_MUSHROOM2, image: 'pickup_mushroom2'});
+EDITOR_MENU.add({x: 3, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_BOOK, image: 'pickup_book'});
+EDITOR_MENU.add({x: 4, y: 5, tool: EDITOR_TOOL_PICKUP, option: PICKUP_APPLE, image: 'pickup_apple'});
 
 // Special options
 EDITOR_MENU.add({x: 0, y: 6, special: EDITOR_SPECIAL_TRY, text: 'Try'});

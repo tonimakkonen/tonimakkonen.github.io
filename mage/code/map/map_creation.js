@@ -24,6 +24,7 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
 
   // Add BG images
   mapCreateBackground(game, map, false, mapObjectList);
+  var objectCount = mapObjectList.length;
 
   // Add Tiles
   for (var px = 0; px < map.x; px++) {
@@ -31,6 +32,8 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
       mapCreateSingleTile(game, map, px, py, mapObjectList, inEditor);
     }
   }
+  console.log('Tile related sprites: ' + (mapObjectList.length -objectCount));
+
   createMapBlocks(game, map.tiles, map.x, map.y, 80, 80, groupBlocks, mapObjectList);
 
   // Note that enemies and such non-static content are not added into map object list
@@ -55,6 +58,7 @@ function mapInitialize(game, map, mapObjectList, inEditor) {
   player.setGravity(0, 400);
   player.setCollideWorldBounds(true);
   player.setBounce(0.0, 0.0);
+  player.xMass = 1.0;
 
   // Create map ending
   var exit = groupExits.create(map.exitX*80.0 + 40.0, map.exitY*80.0 + 40.0, 'exit_door1');
@@ -85,8 +89,9 @@ function createMapBlocks(game, mapArray, mapX, mapY, tileX, tileY, group, list) 
       var centerX = 0.5*tileX*(end + start) + tileX*0.5;
       var centerY = py*tileY + 0.5*tileY;
       var newRect = game.add.rectangle(centerX, centerY, width - MARGIN, height, 0xff0000);
-      newRect.setAlpha(0.25);
-      newRect.visible = false;
+      newRect.setDepth(9.0);
+      newRect.setAlpha(0.15);
+      newRect.setVisible(false);
       group.add(newRect);
       list.push(newRect);
     }
@@ -104,8 +109,9 @@ function createMapBlocks(game, mapArray, mapX, mapY, tileX, tileY, group, list) 
       var centerX = px*tileX + 0.5*tileX;
       var centerY = 0.5*tileY*(end + start) + tileY*0.5;
       var newRect = game.add.rectangle(centerX, centerY, width, height - MARGIN, 0xff0000);
+      newRect.setDepth(9.0);
       newRect.setAlpha(0.15);
-      newRect.visible = false;
+      newRect.setVisible(false);
       group.add(newRect);
       list.push(newRect);
     }
@@ -124,8 +130,9 @@ function createMapBlocks(game, mapArray, mapX, mapY, tileX, tileY, group, list) 
         var cx = px*tileX + tileX*0.5;
         var cy = py*tileY + tileY*0.5;
         var newRect = game.add.rectangle(cx, cy, tileX, tileY, 0xff0000);
+        newRect.setDepth(9.0);
         newRect.setAlpha(0.15);
-        newRect.visible = false;
+        newRect.setVisible(false);
         group.add(newRect);
         list.push(newRect);
       }

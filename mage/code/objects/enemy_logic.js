@@ -228,6 +228,8 @@ function enemyHandleJump(game, enemy, move, dx, dy) {
 }
 
 function enemyDealDamage(game, enemy, amount, shot) {
+
+
   infoCreateText(game, shot.x, shot.y, amount.toString(10), '#FF0000', 500);
   // TODO: Remove..
   // TODO: Handle shot types and other effects

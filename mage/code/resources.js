@@ -45,13 +45,6 @@ function resLoadResources(game) {
       }
     }
   )
-  // TODO: Define these
-  //game.load.image('bg_mountains', 'imgs/bg_mountains.jpg');
-  //game.load.image('bg0', 'imgs/bg0.png');
-  //game.load.image('bg1', 'imgs/bg1.png');
-  //game.load.image('bg2', 'imgs/bg2.png');
-  //game.load.image('bg3', 'imgs/bg3.png');
-  //game.load.image('bg_forest', 'imgs/bg_forest.png');
 
   // Load UI images not defined in config
   game.load.image('ui_eraser_all', 'imgs/ui/eraser_all.png');
@@ -59,7 +52,19 @@ function resLoadResources(game) {
 
   // Load spell images (not defined in config)
   game.load.image('spell_dummy', 'imgs/spells/spell_dummy.png');
+
+  game.load.image('spell_base', 'imgs/spells/spell_base.png');
+  game.load.image('spell_air_punch', 'imgs/spells/spell_air_punch.png');
+  game.load.image('spell_ball_lightning', 'imgs/spells/spell_ball_lightning.png');
+  game.load.image('spell_water_ball', 'imgs/spells/spell_water_ball.png');
+  game.load.image('spell_ice', 'imgs/spells/spell_ice.png');
   game.load.image('spell_fire_ball', 'imgs/spells/spell_fire_ball.png');
+  game.load.image('spell_fire_storm', 'imgs/spells/spell_fire_storm.png');
+  game.load.image('spell_rock', 'imgs/spells/spell_rock.png');
+  game.load.image('spell_summon_stick', 'imgs/spells/spell_summon_stick.png');
+
+  game.load.image('spell_rain', 'imgs/spells/spell_rain.png');
+  game.load.image('spell_poison', 'imgs/spells/spell_poison.png');
 
   // Sound
   // TODO: Put in definition
@@ -72,6 +77,14 @@ function resLoadResources(game) {
   game.load.audio('sound_wind', 'sound/shots/wind.wav', true);
   game.load.audio('sound_freeze', 'sound/shots/freeze.wav', true);
   game.load.audio('sound_electric', 'sound/shots/electric.wav', true);
+
+  game.load.audio('sound_eat', 'sound/misc/eat.wav', true);
+  game.load.audio('sound_book', 'sound/misc/book.wav', true);
+
+  game.load.audio('sound_explosion1', 'sound/misc/explosion1.wav', true);
+
+  game.load.audio('sound_spell_rain', 'sound/misc/spell_rain.wav', true);
+  game.load.audio('sound_spell_meteor', 'sound/misc/spell_meteor.wav', true);
   //game.load.audio('test_music', 'sound/music.mp3', true);
 }
 
@@ -101,6 +114,8 @@ function resLoadTopLayer(game, value) {
   resLoadImageFromBase(game, value.name, value.locationBase, 'bottomright');
   resLoadImageFromBase(game, value.name, value.locationBase, 'bottom');
   resLoadImageFromBase(game, value.name, value.locationBase, 'top');
+  resLoadImageFromBase(game, value.name, value.locationBase, 'cbl');
+  resLoadImageFromBase(game, value.name, value.locationBase, 'cbr');
 }
 
 function resLoadSymmetricLayer(game, value) {

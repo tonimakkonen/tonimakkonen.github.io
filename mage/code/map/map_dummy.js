@@ -137,7 +137,7 @@ function mapCreateDummy(sizeX, difficulty) {
   mapSetRandomlyOnWalkableTilesAboveGround(tiles, enemies, mapX, mapY, ENEMY_MAGMA_MONSTER, 1, mapDummyCount(randomCount.enemyMagma));
 
   mapSetRandomlyOnWalkableTilesAboveGround(tiles, pickups, mapX, mapY, PICKUP_WATERMELON, 0, mapDummyCount(randomCount.pickupMelons));
-  mapSetRandomlyOnWalkableTilesAboveGround(tiles, pickups, mapX, mapY, PICKUP_MUSHROOM, 0, mapDummyCount(randomCount.pickupMushrooms));
+  mapSetRandomlyOnWalkableTilesAboveGround(tiles, pickups, mapX, mapY, PICKUP_MUSHROOM1, 0, mapDummyCount(randomCount.pickupMushrooms));
 
 
   // Add some BG tiles

@@ -83,38 +83,45 @@ function shotShoot(game, isPlayer, shotType, x, y, dx, dy, allowSound) {
  }
 
 // TODO: Some duplicate code here in these two functions
-// TODO: Consider doing player group..
 
-function shotHitPlayer(game, shot) {
-  if (shot.xDestroyed) return; // avoid duplicate hits
+function shotHitPlayer(game, shot, pl) {
+  if (shot.xDestroyed) return;
   shot.xDestroyed = true;
-  if (shot.xInfo.damage) playerDealDamage(game, shot.xInfo.damage, shot);
-  if(shot.xInfo.punch) {
-    const px = shot.body.velocity.x * shot.xInfo.punch;
-    const py = shot.body.velocity.y * shot.xInfo.punch;
-    playerPunch(game, px, py, shot);
-  }
-  if (shot.xInfo.poison) {
-    playerPoison(game, shot.xInfo.poison);
-  }
-  // TODO: Can player be freezed
+  shotHitHandle(game, shot, pl);
+  if (shot.xInfo.damage) playerDealDamage(game, pl, shot.xInfo.damage, shot)
   shotDestroy(game, shot);
 }
 
 function shotHitEnemy(game, shot, enemy) {
-  if (shot.xDestroyed) return; // avoid duplicate hits
+  if (enemy == null) return;
+  if (shot.xDestroyed) return;
   shot.xDestroyed = true;
+  shotHitHandle(game, shot, enemy);
   if (shot.xInfo.damage) enemyDealDamage(game, enemy, shot.xInfo.damage, shot);
-  if(shot.xInfo.punch) {
-    const px = shot.body.velocity.x * shot.xInfo.punch;
-    const py = shot.body.velocity.y * shot.xInfo.punch;
-    enemyPunch(game, enemy, px, py, shot);
-  }
-  if (shot.xInfo.freeze) {
-    enemyFreeze(game, enemy, shot.xInfo.freeze);
-  }
-  // TODO: Poison enemies
   shotDestroy(game, shot);
+}
+
+function shotHitHandle(game, shot, object) {
+  if (shot.xInfo.punch && !object.xImmovable) {
+    const mass = object.xMass;
+    const vx = object.body.velocity.x;
+    const vy = object.body.velocity.y;
+    const px = (shot.body.velocity.x - vx) * shot.xInfo.punch / mass;
+    const py = (shot.body.velocity.y - vy) * shot.xInfo.punch / mass;
+    object.setVelocity(vx + px, vy + py);
+  }
+  if (shot.xInfo.poison) shotPoison(game, object, shot.xInfo.poison);
+  if (shot.xInfo.freeze) shotFreeze(game, object, shot.xInfo.freeze);
+}
+
+function shotFreeze(game, object, amount) {
+  if (!object.xFreeze) object.xFreeze = game.time.now;
+  object.xFreeze += amount;
+}
+
+function shotPoison(game, object, amount) {
+  if (!object.xPoison) object.xPoison = game.time.now;
+  object.xPoison += amount;
 }
 
 function shotHitWall(game, shot, wall) {
@@ -127,10 +134,10 @@ function shotHitWall(game, shot, wall) {
     shot.xBounceCount += 1;
     if (shot.xInfo.bounce.count <= shot.xBounceCount) shotDestroy(game, shot);
   }
-
 }
 
 function shotDestroy(game, shot) {
+  if (shot.xInfo.deathSound) soundRequestEnv(game, shot.xInfo.deathSound, shot.x, shot.y);
   if (shot.xInfo.spawn) {
     const spawn = shot.xInfo.spawn;
     for (var i = 0; i < spawn.amount; i++) {

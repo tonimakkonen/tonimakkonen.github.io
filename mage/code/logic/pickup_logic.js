@@ -17,6 +17,7 @@ function pickupCreate(game, pickupType, x, y) {
 }
 
 function pickupCollect(game, pickup) {
+  var doConsume = false;
   const canHeal = pickup.xInfo.heal && playerHealth < 100.0;
   const canIncreaseMana = pickup.xInfo.mana && playerMana < 100.0;
   if (canHeal || canIncreaseMana) {
@@ -29,6 +30,16 @@ function pickupCollect(game, pickup) {
       playerUpdateMana(game, pickup.xInfo.mana);
       infoCreateText(game, pickup.x, pickup.y + delta, '+' + pickup.xInfo.mana.toString(10), '#0000FF', 1500);
     }
+    doConsume = true;
+  }
+  if (pickup.xInfo.books) {
+    // TODO: Add to player stats
+    playerProgress.spellBooks += 1;
+    infoCreateText(game, pickup.x, pickup.y, 'NEW SKILL!', '#FFFFFF', 1500);
+    doConsume = true;
+  }
+  if (doConsume) {
+    if (pickup.xInfo.sound) soundRequestEnv(game, pickup.xInfo.sound, pickup.x, pickup.y);
     pickup.destroy();
   }
 }

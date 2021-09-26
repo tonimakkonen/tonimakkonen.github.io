@@ -3,9 +3,10 @@
 
 // Player variables
 
+// TODO: Move to config
 const playerJumpAmount = 250;
 
-// This is used by a lot of effects
+// This is used by e.g. enemies and plaaying souds
 var playerLocation = { x: 0, y: 0}
 
 
@@ -14,7 +15,7 @@ var playerHealth = 100.0;
 var playerMana = 100.0;
 var playerLastRegen = null;
 
-var playerLeftSpell = SPELLS.get(SPELL_BALL_LIGHTNING);
+var playerLeftSpell = playerStatsGetInitialSpell();
 var playerRightSpell = null;
 var playerLeftSpellLast = 0;
 var playerRightSpellLast = 0;

@@ -68,9 +68,14 @@ const GRAPH_MAGMA_MONSTER        = 107;
 const GRAPH_SAND_MONSTER         = 108;
 const GRAPH_BAT_MONSTER          = 109;
 const GRAPH_MUSHROOM_MONSTER     = 110;
+const GRAPH_FROST_MONSTER        = 111;
+const GRAPH_BUG_MONSTER          = 112;
 
 const GRAPH_WATERMELON_PICKUP    = 201;
-const GRAPH_MUSHROOM_PICKUP      = 202;
+const GRAPH_MUSHROOM1_PICKUP     = 202;
+const GRAPH_MUSHROOM2_PICKUP     = 203;
+const GRAPH_BOOK_PICKUP          = 204;
+const GRAPH_APPLE_PICKUP         = 205;
 
 const GRAPH_WATER_SHOT           = 301;
 const GRAPH_ELECTRIC_SHOT        = 302;
@@ -82,6 +87,7 @@ const GRAPH_ICE_SHOT             = 307;
 const GRAPH_SMALL_WATER_SHOT     = 308;
 const GRAPH_ROCK_SHOT            = 309;
 const GRAPH_POISON_SHOT          = 310;
+const GRAPH_METEOR_SHOT          = 311;
 
 const GRAPH_EXIT_DOOR1           = 401;
 const GRAPH_SIGN                 = 402;
@@ -92,8 +98,8 @@ const GRAPH_TREE1_DECORATION     = 503;
 const GRAPH_TREE2_DECORATION     = 504;
 const GRAPH_TREE3_DECORATION     = 505;
 const GRAPH_TREE4_DECORATION     = 506;
-
-
+const GRAPH_TREE5_DECORATION     = 507;
+const GRAPH_CACTUS1_DECORATION   = 508;
 
 var GRAPHS = new Map();
 
@@ -208,6 +214,26 @@ GRAPHS.set(
   }
 );
 
+GRAPHS.set(
+  GRAPH_FROST_MONSTER,
+  {
+    location: 'imgs/monsters/frost_monster.png',
+    name: 'enemy_frost_monster',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_BUG_MONSTER,
+  {
+    location: 'imgs/monsters/bug_monster.png',
+    name: 'enemy_bug_monster',
+    type: GRAPH_TYPE_LEFT_RIGHT,
+    sizeX: 50,
+    sizeY: 25
+  }
+);
+
 // Pickups
 
 GRAPHS.set(
@@ -220,10 +246,37 @@ GRAPHS.set(
 );
 
 GRAPHS.set(
-  GRAPH_MUSHROOM_PICKUP,
+  GRAPH_MUSHROOM1_PICKUP,
   {
-    location: 'imgs/pickups/mushroom.png',
-    name: 'pickup_mushroom',
+    location: 'imgs/pickups/mushroom1.png',
+    name: 'pickup_mushroom1',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_MUSHROOM2_PICKUP,
+  {
+    location: 'imgs/pickups/mushroom2.png',
+    name: 'pickup_mushroom2',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_BOOK_PICKUP,
+  {
+    location: 'imgs/pickups/book.png',
+    name: 'pickup_book',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
+GRAPHS.set(
+  GRAPH_APPLE_PICKUP,
+  {
+    location: 'imgs/pickups/apple.png',
+    name: 'pickup_apple',
     type: GRAPH_TYPE_SINGLE
   }
 );
@@ -324,6 +377,15 @@ GRAPHS.set(
   }
 );
 
+GRAPHS.set(
+  GRAPH_METEOR_SHOT,
+  {
+    location: 'imgs/shots/meteor.png',
+    name: 'shot_meteor',
+    type: GRAPH_TYPE_SINGLE
+  }
+);
+
 // Special thingys
 
 GRAPHS.set(
@@ -400,6 +462,24 @@ GRAPHS.set(
   }
 )
 
+GRAPHS.set(
+  GRAPH_TREE5_DECORATION,
+  {
+    location: 'imgs/decorations/tree5.png',
+    name: 'decoration_tree5',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
+GRAPHS.set(
+  GRAPH_CACTUS1_DECORATION,
+  {
+    location: 'imgs/decorations/cactus1.png',
+    name: 'decoration_cactus1',
+    type: GRAPH_TYPE_SINGLE
+  }
+)
+
 /////////////////////////////////////////////////////////
 // All the different layer types and various z indexes //
 /////////////////////////////////////////////////////////
@@ -415,6 +495,7 @@ const LAYER_ROCK      = 3;
 const LAYER_SNOW      = 4;
 const LAYER_VOID      = 5;
 const LAYER_INVISIBLE = 6;
+const LAYER_SAND      = 7;
 
 var LAYERS = new Map();
 
@@ -489,13 +570,29 @@ LAYERS.set(
   }
 );
 
+LAYERS.set(
+  LAYER_SAND,
+  {
+    type: LAYER_TYPE_TOP,
+    name: 'sand',
+    locationBase: 'imgs/ground/sand',
+    block: true,
+    zInternal: -0.2,
+    zBlock: -0.2,
+    zTop: 2.1
+  }
+);
+
 ////////////////////////////////////
 // All the different pickup types //
 ////////////////////////////////////
 
 
 const PICKUP_WATERMELON = 1;
-const PICKUP_MUSHROOM   = 2;
+const PICKUP_MUSHROOM1  = 2;
+const PICKUP_MUSHROOM2  = 3;
+const PICKUP_BOOK       = 4;
+const PICKUP_APPLE      = 5;
 
 var PICKUPS = new Map();
 
@@ -504,16 +601,48 @@ PICKUPS.set(
   {
     graph: GRAPH_WATERMELON_PICKUP,
     heal: 40,
-    mana: 40
+    mana: 40,
+    sound: 'sound_eat'
   }
 );
 
 PICKUPS.set(
-  PICKUP_MUSHROOM,
+  PICKUP_MUSHROOM1,
   {
-    graph: GRAPH_MUSHROOM_PICKUP,
+    graph: GRAPH_MUSHROOM1_PICKUP,
     moveY: 25,
-    mana: 100
+    mana: 100,
+    sound: 'sound_eat'
+  }
+);
+
+PICKUPS.set(
+  PICKUP_MUSHROOM2,
+  {
+    graph: GRAPH_MUSHROOM2_PICKUP,
+    moveY: 25,
+    heal: 40,
+    mana: 40,
+    sound: 'sound_eat'
+  }
+);
+
+PICKUPS.set(
+  PICKUP_BOOK,
+  {
+    graph: GRAPH_BOOK_PICKUP,
+    books: 1,
+    sound: 'sound_book'
+  }
+);
+
+PICKUPS.set(
+  PICKUP_APPLE,
+  {
+    graph: GRAPH_APPLE_PICKUP,
+    heal: 60,
+    mana: 20,
+    sound: 'sound_eat'
   }
 );
 
@@ -522,12 +651,14 @@ PICKUPS.set(
 // All the different decoration //
 //////////////////////////////////
 
-const DECORATION_ROCK1 = 1;
-const DECORATION_ROCK2 = 2;
-const DECORATION_TREE1 = 3;
-const DECORATION_TREE2 = 4;
-const DECORATION_TREE3 = 5;
-const DECORATION_TREE4 = 6;
+const DECORATION_ROCK1   = 1;
+const DECORATION_ROCK2   = 2;
+const DECORATION_TREE1   = 3;
+const DECORATION_TREE2   = 4;
+const DECORATION_TREE3   = 5;
+const DECORATION_TREE4   = 6;
+const DECORATION_TREE5   = 7;
+const DECORATION_CACTUS1 = 8;
 
 var DECORATIONS = new Map();
 
@@ -579,6 +710,22 @@ DECORATIONS.set(
   }
 )
 
+DECORATIONS.set(
+  DECORATION_TREE5,
+  {
+    graph: GRAPH_TREE5_DECORATION,
+    z: -0.025
+  }
+)
+DECORATIONS.set(
+  DECORATION_CACTUS1,
+  {
+    graph: GRAPH_CACTUS1_DECORATION,
+    z: -0.025,
+    moveY: 10
+  }
+)
+
 ///////////////////////////////////
 // All the different backgrounds //
 ///////////////////////////////////
@@ -588,6 +735,7 @@ DECORATIONS.set(
 const BACKGROUND_EMPTY     = 1;
 const BACKGROUND_MOUNTAINS = 2;
 const BACKGROUND_NIGHT     = 3;
+const BACKGROUND_FOREST    = 4;
 
 var BACKGROUNDS = new Map();
 
@@ -611,5 +759,13 @@ BACKGROUNDS.set(
   {
     name: 'bg_night',
     location: 'imgs/bg_sky.jpg' // TODO: rename
+  }
+)
+
+BACKGROUNDS.set(
+  BACKGROUND_FOREST,
+  {
+    name: 'bg_forest',
+    location: 'imgs/bg_forest.jpg' // TODO: rename
   }
 )
