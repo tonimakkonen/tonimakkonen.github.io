@@ -116,12 +116,16 @@ function shotHitHandle(game, shot, object) {
 
 function shotFreeze(game, object, amount) {
   if (!object.xFreeze) object.xFreeze = game.time.now;
-  object.xFreeze += amount;
+  var mass = 1.0;
+  if (object.xMass) object.xMass;
+  object.xFreeze += amount / mass;
 }
 
 function shotPoison(game, object, amount) {
   if (!object.xPoison) object.xPoison = game.time.now;
-  object.xPoison += amount;
+  var mass = 1.0;
+  if (object.xMass) object.xMass;
+  object.xPoison += amount / mass;
 }
 
 function shotHitWall(game, shot, wall) {

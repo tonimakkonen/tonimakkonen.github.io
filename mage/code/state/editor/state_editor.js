@@ -162,6 +162,7 @@ function editorHandleTab(game) {
     if (inputLeftClick) {
       if (toolOn.special == EDITOR_SPECIAL_TRY) {
         editorClose();
+        playerStatsSetForTesting();
         return GAME_MODE_PLAYING;
       } else if (toolOn.special == EDITOR_SPECIAL_NEW) {
         const desiredSize = prompt("Desired size in full screens (e.g. 4x4)");

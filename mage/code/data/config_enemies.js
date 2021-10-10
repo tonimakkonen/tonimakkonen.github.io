@@ -18,6 +18,7 @@ const ENEMY_BAT_MONSTER            = 9;
 const ENEMY_MUSHROOM_MONSTER       = 10;
 const ENEMY_FROST_MONSTER          = 11;
 const ENEMY_BUG_MONSTER            = 12;
+const ENEMY_WALL                   = 13;
 
 
 var ENEMIES = new Map();
@@ -182,5 +183,15 @@ ENEMIES.set(
     mass: 0.5,
     fireDef: -50,
     earthDef: 50
+  }
+);
+
+ENEMIES.set(
+  ENEMY_WALL,
+  {
+    graph: GRAPH_WALL,
+    immovable: true,
+    health: 100,
+    mass: 1.0
   }
 );

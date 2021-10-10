@@ -6,7 +6,7 @@
 ///////////////////////
 
 // Used for local storage. Update this with big changes to storage.
-const VERSION = '2021_09_13';
+const VERSION = '2021_10_09';
 
 // Typical HD (720p) resolution. Should work on most devices
 const settingWidth = 1280;
@@ -70,6 +70,7 @@ const GRAPH_BAT_MONSTER          = 109;
 const GRAPH_MUSHROOM_MONSTER     = 110;
 const GRAPH_FROST_MONSTER        = 111;
 const GRAPH_BUG_MONSTER          = 112;
+const GRAPH_WALL                 = 113;
 
 const GRAPH_WATERMELON_PICKUP    = 201;
 const GRAPH_MUSHROOM1_PICKUP     = 202;
@@ -231,6 +232,15 @@ GRAPHS.set(
     type: GRAPH_TYPE_LEFT_RIGHT,
     sizeX: 50,
     sizeY: 25
+  }
+);
+
+GRAPHS.set(
+  GRAPH_WALL,
+  {
+    location: 'imgs/monsters/wall.png',
+    name: 'enemy_wall',
+    type: GRAPH_TYPE_SINGLE
   }
 );
 
@@ -496,6 +506,7 @@ const LAYER_SNOW      = 4;
 const LAYER_VOID      = 5;
 const LAYER_INVISIBLE = 6;
 const LAYER_SAND      = 7;
+const LAYER_SNOWCAVE  = 8;
 
 var LAYERS = new Map();
 
@@ -580,6 +591,18 @@ LAYERS.set(
     zInternal: -0.2,
     zBlock: -0.2,
     zTop: 2.1
+  }
+);
+
+LAYERS.set(
+  LAYER_SNOWCAVE,
+  {
+    type: LAYER_TYPE_SYMMETRIC,
+    name: 'snowcave',
+    locationBase: 'imgs/ground/snowcave',
+    block: false,
+    zInternal: -0.5,
+    zBlock: -0.5
   }
 );
 
@@ -714,7 +737,8 @@ DECORATIONS.set(
   DECORATION_TREE5,
   {
     graph: GRAPH_TREE5_DECORATION,
-    z: -0.025
+    z: -0.025,
+    moveY: -40
   }
 )
 DECORATIONS.set(

@@ -11,12 +11,14 @@ const uiOptions = {
   dy: 15,
   m: 4,
   gridDeltaY: 50.0,
-  spellCenterX: 300.0,
-  spellCenterY: 300.0,
+  spellCenterX: 240.0,
+  spellCenterY: 260.0,
   spellDelta: 90.0,
   spellScale: 0.75,
-  skillX: 700,
-  skillY: 100
+  statX: 600,
+  statY: 40,
+  skillX: 900,
+  skillY: 40
 }
 
 // Width of full health bar
@@ -121,25 +123,39 @@ function uiShowSpellSelection(game) {
       y: cy - delta / 2,
       width: delta,
       height: delta,
-      help: help, // TODO: set better help
+      help: help,
       selectSpell: selectSpell
     })
   });
 
-  // Create skills that can be learned
-  const text = game.add.text(uiOptions.skillX, uiOptions.skillY, 'Learnable skills');
-  text.setScrollFactor(0.0, 0.0);
-  text.setDepth(10.0);
-  uiTabObjects.push({gameObjs: [text]});
+  // Create defense and other modifiers
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY, 'Player Stats', 'Learn skills to improve stats', uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 80, 'Health regen: ' + playerStats.healthRegen, playerStats.healthRegenText, uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 120, 'Mana regen: ' + playerStats.manaRegen, playerStats.manaRegenText, uiTabObjects);
+
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 200, 'Air def: ' + playerStats.airDef, playerStats.airDefText, uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 240, 'Water def: ' + playerStats.waterDef, playerStats.waterDefText, uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 280, 'Fire def: ' + playerStats.fireDef, playerStats.fireDefText, uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 320, 'Earth def: ' + playerStats.earthDef, playerStats.earthDefText, uiTabObjects);
+
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 400, 'Speed ' + playerStats.speed, playerStats.speedText, uiTabObjects);
+  uiAddStatText(game, uiOptions.statX, uiOptions.statY + 440, 'Jump ' + playerStats.jump, playerStats.jumpText, uiTabObjects);
+
+  // Skills
+  const anySpellBooks = playerProgress.spellBooks > 0;
+  uiAddStatText(game, uiOptions.skillX, uiOptions.skillY, 'Learnable skills: ' + playerProgress.spellBooks, 'Get spell books to learn new skills', uiTabObjects);
 
   const learnableSkills = skillGetLearnable(playerProgress.skills);
   for (var i = 0; i < learnableSkills.length; i++) {
     const skill = SKILLS.get(learnableSkills[i]);
+    const learn = anySpellBooks ? learnableSkills[i] : undefined;
+    const color = anySpellBooks ? '#ffffff' : '#808080';
     const px = uiOptions.skillX;
-    const py = uiOptions.skillY + (i + 2) * 40.0; // TODO:
-    const text = game.add.text(px, py, skill.name);
+    const py = uiOptions.skillY + (i + 2) * 40.0;
+    const text = game.add.text(px, py, skill.name).setColor(color);
     text.setScrollFactor(0.0, 0.0);
     text.setDepth(10.0);
+
     uiTabObjects.push({
       gameObjs: [text],
       x: text.x,
@@ -147,7 +163,7 @@ function uiShowSpellSelection(game) {
       width: text.width,
       height: text.height,
       help: skill.help,
-      learnSkill: learnableSkills[i]
+      learnSkill: learn
     })
 
   }
@@ -155,6 +171,21 @@ function uiShowSpellSelection(game) {
   // Create info texts
 
   uiSpellSelectionVisible = true;
+}
+
+// TODO: Add color
+function uiAddStatText(game, px, py, text, help, list) {
+  const textObj = game.add.text(px, py, text);
+  textObj.setScrollFactor(0.0, 0.0);
+  textObj.setDepth(10.0);
+  list.push({
+    gameObjs: [textObj],
+    x: textObj.x,
+    y: textObj.y,
+    width: textObj.width,
+    height: textObj.height,
+    help: help
+  })
 }
 
 // Handle spell selection logic and other UI logic
@@ -189,11 +220,13 @@ function uiHandleLogic(game) {
         }
 
         if (inputLeftClick && ho.learnSkill) {
-          playerProgress.skills.push(ho.learnSkill);
-          playerStatsUpdate();
-          changes = true;
+          if (playerProgress.spellBooks > 0) {
+            playerProgress.spellBooks -= 1;
+            playerProgress.skills.push(ho.learnSkill);
+            playerStatsUpdate();
+            changes = true;
+          }
         }
-
       }
     }
     if (!onTabObject) uiHelpText.setVisible(false);

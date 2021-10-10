@@ -21,7 +21,7 @@ function storageLoad() {
       mapBlueprint =  JSON.parse(mapBlueprintJson);
 
       const playerProgressJson = localStorage.getItem('playerProgress');
-      if (playerProgressJson != null) playerProgress = JSON.parse(playerProgressJson);
+      if (playerProgressJson != null) playerProgressSave = JSON.parse(playerProgressJson);
     }
   }
   localStorage.setItem('version', VERSION);
@@ -34,5 +34,5 @@ function storageSaveMap() {
 
 function storageSavePlayerProgress() {
   console.log('saving player progress to local storage');
-  localStorage.setItem('playerProgress', JSON.stringify(mapBlueprint));
+  localStorage.setItem('playerProgress', JSON.stringify(playerProgressSave));
 }

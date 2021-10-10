@@ -38,8 +38,8 @@ function playerHandleLogic(game, curTime) {
   const vx = player.body.velocity.x;
   const vy = player.body.velocity.y;
 
-  var moveAcc = 800;
-  var playerJumpAmount = 250;
+  var moveAcc = playerStats.speed;
+  var playerJumpAmount = playerStats.jump;
   if (player.xFreeze) {
     moveAcc = moveAcc / 2.0;
     playerJumpAmount = playerJumpAmount / 2.0;
@@ -92,10 +92,18 @@ function playerHandleLogic(game, curTime) {
   // Regeneration
   if (playerLastRegen == null) playerLastRegen = game.time.now;
   const dt = game.time.now - playerLastRegen;
-  // TODO: This needs to be refactored
+  // TODO: poison needs to be refactored to be consistent with enemies
   if (player.xPoison) playerUpdateHealth(game, -dt * 3.0 / 1000.0);
-  playerUpdateMana(game, dt * 5.0 / 1000.0); // 5 per sec
+  if (playerStats.manaRegen != 0) playerUpdateMana(game, playerStats.manaRegen * dt / 1000.0);
+  if (playerStats.healthRegen != 0) playerUpdateHealth(game, playerStats.healthRegen * dt / 1000.0);
   playerLastRegen = game.time.now;
+
+  // Falling to death
+  if (player != null) {
+    if (player.y >= mapBlueprint.y * 80.0 - 40.0) {
+      playerUpdateHealth(game, -1000);
+    }
+  }
 }
 
 // Choose a spell if is different than the last one

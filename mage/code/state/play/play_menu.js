@@ -17,8 +17,11 @@ function playMenuSetupDead(game) {
 
 // Menu when level is completed
 function playMenuSetupComplete(game) {
-  // TODO: Different behaviour based on what was the last mode
-  playMenuSetupMenu(game, 'Level completed', 'Retry level', playMenuGetLastModetext());
+  if (gameModePlayingCampaign) {
+    playMenuSetupMenu(game, 'Level completed', 'Next level', playMenuGetLastModetext());
+  } else {
+    playMenuSetupMenu(game, 'Level completed', 'Retry level', playMenuGetLastModetext());
+  }
 }
 
 function playMenuGetLastModetext() {

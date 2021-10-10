@@ -86,6 +86,8 @@ function resLoadResources(game) {
   game.load.audio('sound_spell_rain', 'sound/misc/spell_rain.wav', true);
   game.load.audio('sound_spell_meteor', 'sound/misc/spell_meteor.wav', true);
   //game.load.audio('test_music', 'sound/music.mp3', true);
+
+
 }
 
 // Load single image

@@ -32,6 +32,7 @@ var config = {
 var gameSingleton = new Phaser.Game(config);
 var gameMode = GAME_MODE_NONE;
 var gameModeLast = gameMode;
+var gameModePlayingCampaign = false;
 
 var groupBlocks;
 var groupPlayerBlocks; // some enemies block players

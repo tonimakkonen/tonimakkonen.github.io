@@ -9,13 +9,10 @@ function stateStartMainMenu(game) {
   // TODO: Change the BG
   mmBg = game.add.image(settingWidth/2, settingHeight/2, 'bg_night');
 
-  mmAddNewText(game, 'Start on random map (easy)');
-  mmAddNewText(game, 'Start on random map (difficult)');
-  mmAddNewText(game, 'Start on random map (super big)');
-  mmAddNewText(game, 'Test map 1: The descent (difficult)');
-  mmAddNewText(game, 'Test map 2: Winter maze  (difficult)');
-  mmAddNewText(game, 'Test map 3: Peaceful forest');
+  if (!playerProgressSave.started) mmAddNewText(game, 'Start new game');
+  else mmAddNewText(game, 'Continue game (level ' + playerProgressSave.level + ')');
   mmAddNewText(game, 'Editor');
+  if (playerProgressSave.started) mmAddNewText(game, 'Reset progress')
 }
 
 function mmAddNewText(game, text) {
@@ -57,35 +54,32 @@ function stateHandleMainMenu(game) {
 }
 
 function mmPushButton(game, option) {
-  // TODO: Refactor a bit
+  // TODO: Handle
   if (option == 0) {
-    mapBlueprint = mapCreateDummy(3, 1); // size, difficulty
-    mmDestroy(game);
+    // Continue on the campaign
+    gameModePlayingCampaign = true;
+    playerProgressSave.started = true;
+    storageSavePlayerProgress();
+    mapBlueprint = LEVELS.get(playerProgressSave.level).mapBlueprint;
+    mmDestroy();
     return GAME_MODE_PLAYING;
-  } else if(option == 1) {
-    mapBlueprint = mapCreateDummy(5, 2); // size, difficulty
-    mmDestroy(game);
-    return GAME_MODE_PLAYING;
-  } else if (option == 2) {
-    mapBlueprint = mapCreateDummy(10, 1.5); // size, difficulty
-    mmDestroy(game);
-    return GAME_MODE_PLAYING;
-  } else if (option == 3) {
-    mapBlueprint = { ...testMapDescent };
-    mmDestroy(game);
-    return GAME_MODE_PLAYING;
-  } else if (option == 4) {
-    mapBlueprint = { ...testMapWinterMaze };
-    mmDestroy(game);
-    return GAME_MODE_PLAYING;
-  } else if (option == 5) {
-    mapBlueprint = { ...testMapForest };
-    mmDestroy(game);
-    return GAME_MODE_PLAYING;
-  } else if (option == 6) {
+  } else if (option == 1) {
+    // EDITOR
+    gameModePlayingCampaign = false;
     mmDestroy(game);
     return GAME_MODE_MAP_EDITOR;
+  } else if (option == 2) {
+    playerStatsFullReset();
+    playerStatsSave();
+    mmReCreate(game);
+    return GAME_MODE_MAIN_MENU;
   } else {
     throw 'Unknow option: ' + option;
   }
+}
+
+// Recreate the full main menu
+function mmReCreate(game) {
+  mmDestroy();
+  stateStartMainMenu(game);
 }
