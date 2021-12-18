@@ -82,16 +82,14 @@ function enemyHandleLogic(game, enemy, curTime) {
   // change health bar location
   if (enemy.xHealthBar) enemy.xHealthBar.setPosition(enemy.x, enemy.y - enemy.height / 2.0);
 
+  // magic effects
   magichandleObjectTint(game, enemy);
-
-  // frozed enemies
-  // TODO: Poisoned enemies damage
+  magichandlePoisonEffect(game, enemy, false);
   if (enemy.xFreeze) {
     // Do not reload shots while frozen
     enemy.xLastShot1 = game.time.now;
     enemy.xLastShot2 = game.time.now;
     if (enemy.xInfo.immovable) return true;
-    // TODO: what coefficient?
     enemy.setGravity(-enemy.body.velocity.x, 400);
     return true;
   }
@@ -227,9 +225,9 @@ function enemyHandleJump(game, enemy, move, dx, dy) {
   }
 }
 
-function enemyDealDamage(game, enemy, amount, shot) {
-  const damage = magicCalculateDamageAndAddText(game, shot.x, shot.y, amount, shot.xInfo.type, enemy.xInfo.airDef, enemy.xInfo.waterDef, enemy.xInfo.fireDef, enemy.xInfo.earthDef);
-  enemyUpdateHealth(game, enemy, -damage, shot);
+function enemyDealDamage(game, enemy, amount, textX, textY, type) {
+  const damage = magicCalculateDamageAndAddText(game, textX, textY, amount, type, enemy.xInfo.airDef, enemy.xInfo.waterDef, enemy.xInfo.fireDef, enemy.xInfo.earthDef);
+  enemyUpdateHealth(game, enemy, -damage);
 }
 
 function enemyUpdateHealth(game, enemy, amount) {

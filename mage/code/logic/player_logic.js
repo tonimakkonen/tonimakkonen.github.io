@@ -6,7 +6,6 @@
 // This is used by e.g. enemies and plaaying souds
 var playerLocation = { x: 0, y: 0}
 
-
 var player = null;
 var playerHealth = 100.0;
 var playerMana = 100.0;
@@ -89,14 +88,18 @@ function playerHandleLogic(game, curTime) {
     }
   }
 
+  // poison effects
+  magichandlePoisonEffect(game, player, true);
+
   // Regeneration
-  if (playerLastRegen == null) playerLastRegen = game.time.now;
-  const dt = game.time.now - playerLastRegen;
-  // TODO: poison needs to be refactored to be consistent with enemies
-  if (player.xPoison) playerUpdateHealth(game, -dt * 3.0 / 1000.0);
-  if (playerStats.manaRegen != 0) playerUpdateMana(game, playerStats.manaRegen * dt / 1000.0);
-  if (playerStats.healthRegen != 0) playerUpdateHealth(game, playerStats.healthRegen * dt / 1000.0);
-  playerLastRegen = game.time.now;
+  if (playerHealth > 0.0) {
+    if (playerLastRegen == null) playerLastRegen = game.time.now;
+    const dt = game.time.now - playerLastRegen;
+    // TODO: poison needs to be refactored to be consistent with enemies
+    if (playerStats.manaRegen != 0) playerUpdateMana(game, playerStats.manaRegen * dt / 1000.0);
+    if (playerStats.healthRegen != 0) playerUpdateHealth(game, playerStats.healthRegen * dt / 1000.0);
+    playerLastRegen = game.time.now;
+  }
 
   // Falling to death
   if (player != null) {
@@ -150,8 +153,8 @@ function playerHeal(game, amount) {
   playerUpdateHealth(game, amount);
 }
 
-function playerDealDamage(game, player, amount, shot) {
-  const damage = magicCalculateDamageAndAddText(game, shot.x, shot.y, amount, shot.xInfo.type, playerStats.airDef, playerStats.waterDef, playerStats.fireDef, playerStats.earthDef);
+function playerDealDamage(game, player, amount, textX, textY, type) {
+  const damage = magicCalculateDamageAndAddText(game, textX, textY, amount, type, playerStats.airDef, playerStats.waterDef, playerStats.fireDef, playerStats.earthDef);
   playerUpdateHealth(game, -amount);
 }
 

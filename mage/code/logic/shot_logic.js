@@ -85,19 +85,19 @@ function shotShoot(game, isPlayer, shotType, x, y, dx, dy, allowSound) {
 // TODO: Some duplicate code here in these two functions
 
 function shotHitPlayer(game, shot, pl) {
-  if (shot.xDestroyed) return;
+  if (shot.xDestroyed) return; // safety against duplicate hits
   shot.xDestroyed = true;
   shotHitHandle(game, shot, pl);
-  if (shot.xInfo.damage) playerDealDamage(game, pl, shot.xInfo.damage, shot)
+  if (shot.xInfo.damage) playerDealDamage(game, pl, shot.xInfo.damage, shot.x, shot.y, shot.xInfo.type)
   shotDestroy(game, shot);
 }
 
 function shotHitEnemy(game, shot, enemy) {
   if (enemy == null) return;
-  if (shot.xDestroyed) return;
+  if (shot.xDestroyed) return; // safety against duplicate hits
   shot.xDestroyed = true;
   shotHitHandle(game, shot, enemy);
-  if (shot.xInfo.damage) enemyDealDamage(game, enemy, shot.xInfo.damage, shot);
+  if (shot.xInfo.damage) enemyDealDamage(game, enemy, shot.xInfo.damage, shot.x, shot.y, shot.xInfo.type);
   shotDestroy(game, shot);
 }
 
@@ -122,9 +122,9 @@ function shotFreeze(game, object, amount) {
 }
 
 function shotPoison(game, object, amount) {
-  if (!object.xPoison) object.xPoison = game.time.now;
+  if (!object.xPoison) object.xPoison = 0.0;
   var mass = 1.0;
-  if (object.xMass) object.xMass;
+  if (object.xMass) mass = object.xMass;
   object.xPoison += amount / mass;
 }
 

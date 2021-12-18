@@ -35,10 +35,12 @@ function magicCalculateDamageAndAddText(game, px, py, amount, type,  airDef, wat
   return damage;
 }
 
+// Change phaser3 object tint based on magical effects
 function magichandleObjectTint(game, object) {
   // Clear tint if time has run out
+  // TODO: Note difference between times
   if (object.xFreeze && game.time.now > object.xFreeze) object.xFreeze = undefined;
-  if (object.xPoison && game.time.now > object.xPoison) object.xPoison = undefined;
+  if (object.xPoison && object.xPoison < 0.0) object.xPoison = undefined;
   // Set desired tint based on current state
   var desiredTint = null;
   if (object.xFreeze && object.xPoison) {
@@ -58,5 +60,31 @@ function magichandleObjectTint(game, object) {
       object.setTint(desiredTint);
       object.xTint = desiredTint;
     }
+  }
+}
+
+// Handle poisoning effect
+function magichandlePoisonEffect(game, object, isPlayer) {
+  if (!object.xPoison) return;
+  if (!object.xPoisonLast) object.xPoisonLast = game.time.now;
+  if (game.time.now < object.xPoisonLast + 1000.0) return;
+
+  // do the poison effect
+  var dps = 2.0;
+  if (object.xPoison > 10000.0) {
+    dps = dps + (object.xPoison - 10000.0) / 1000.0;
+  }
+  object.xPoison = object.xPoison - 1000.0 * dps / 2.0;
+  if (isPlayer) {
+    playerDealDamage(game, object, dps, object.x, object.y, MAGIC_TYPE_EARTH);
+  } else {
+    enemyDealDamage(game, object, dps, object.x, object.y, MAGIC_TYPE_EARTH);
+  }
+  object.xPoisonLast = game.time.now;
+
+  // reset poison when it's done
+  if (object.xPoison < 0.0) {
+    object.xPoison = undefined;
+    object.xPoisonLast = undefined;
   }
 }

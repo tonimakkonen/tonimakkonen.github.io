@@ -1,6 +1,8 @@
 
 "use strict";
 
+// This map is used if we ever add more properties to levels here
+
 var LEVELS = new Map();
 
 LEVELS.set(
@@ -59,6 +61,42 @@ LEVELS.set(
     location: 'maps/level7.json'
   }
 );
+
+LEVELS.set(
+  8,
+  {
+    location: 'maps/level8.json'
+  }
+);
+
+LEVELS.set(
+  9,
+  {
+    location: 'maps/level9.json'
+  }
+);
+
+LEVELS.set(
+  10,
+  {
+    location: 'maps/level10.json'
+  }
+);
+
+LEVELS.set(
+  11,
+  {
+    location: 'maps/level11.json'
+  }
+);
+
+LEVELS.set(
+  12,
+  {
+    location: 'maps/level12.json'
+  }
+);
+
 
 // We load our levels here
 // TODO: Make a check when levels are actually loaded

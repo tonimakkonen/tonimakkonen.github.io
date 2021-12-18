@@ -159,6 +159,7 @@ SHOTS.set(
     grav: 1.0,
     spawn: { type: SHOT_FIRE, amount: 20, velocity: 0.5},
     punch: 1.0,
+    sound: 'sound_fire2',
     deathSound: 'sound_explosion1'
   }
 )
