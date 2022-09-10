@@ -36,8 +36,8 @@ var mouseDownLast = false
 var mouseX = undefined
 var mouseY = undefined
 
-var gameStateLast = undefined
 var gameState = undefined
+var gameLoseFlag = undefined
 
 var blueGold = undefined
 var redGold = undefined
@@ -47,12 +47,18 @@ var redGoldText = undefined
 var redRace = undefined
 var blueAi = undefined
 var redAi = undefined
+var blueBase = undefined
+var redBase = undefined
+var map = []
+var round = 1
 
 var groupBlocks
 var groupBlueUnits
 var groupRedUnits
 var groupBlueShots
 var groupRedShots
+var groupSplatter
+var groupResources
 
 ////////////////////////
 // Phaser 3 functions //
@@ -60,7 +66,6 @@ var groupRedShots
 
 function preload() {
   resLoadResources(this);
-
 }
 
 function create() {
@@ -71,15 +76,22 @@ function create() {
   groupRedUnits = this.physics.add.group()
   groupBlueShots = this.physics.add.group()
   groupRedShots = this.physics.add.group()
+  groupSplatter = this.physics.add.group()
+  groupResources = this.physics.add.group()
 
   this.physics.add.collider(groupBlueUnits, groupBlocks)
   this.physics.add.collider(groupRedUnits,  groupBlocks)
   this.physics.add.collider(groupBlueUnits, groupRedUnits)
+  this.physics.add.collider(groupSplatter, groupBlocks)
+  this.physics.add.collider(groupResources, groupBlocks)
 
   this.physics.add.overlap(groupBlueShots, groupRedUnits, callbackUnitHit, null, this)
   this.physics.add.overlap(groupRedShots, groupBlueUnits, callbackUnitHit, null, this)
   this.physics.add.overlap(groupBlueShots, groupBlocks, callbackShotHitGround, null, this)
   this.physics.add.overlap(groupRedShots, groupBlocks, callbackShotHitGround, null, this)
+  this.physics.add.overlap(groupBlueUnits, groupResources, callbackCollectResource, null, this)
+  this.physics.add.overlap(groupRedUnits, groupResources, callbackCollectResource, null, this)
+
 
   // create tiles
   mapCreate(this)
@@ -87,15 +99,22 @@ function create() {
 }
 
 function goldUpdateText(game) {
-  if (!blueGoldText) {
-      blueGoldText = game.add.text(80, CONFIG_HEIGHT - 20, blueGold, { color: '#fff' }).setOrigin(0.5, 0.5)
+  const ty = CONFIG_HEIGHT - CONFIG_BLOCK / 2.0
+  const tx = CONFIG_WIDTH*0.08
+  const bgt = "Resources : " + blueGold
+  const rgt = "Resources : " + redGold
+  if (!blueGoldText) blueGoldText = game.add.text(tx, ty, bgt, { color: '#ffffff' })
+  else blueGoldText.setText(bgt)
+  if (!redGoldText) redGoldText = game.add.text(CONFIG_WIDTH - tx, ty, rgt, { color: '#ffffff' })
+  else redGoldText.setText(rgt)
+  blueGoldText.setOrigin(0.5, 0.5)
+  redGoldText.setOrigin(0.5, 0.5)
+  if (gameState == GAME_STATE_BUY || gameState == GAME_STATE_COMBAT) {
+    redGoldText.setVisible(true)
+    blueGoldText.setVisible(true)
   } else {
-    blueGoldText.setText(blueGold)
-  }
-  if (!redGoldText) {
-    redGoldText = game.add.text(CONFIG_WIDTH - 80, CONFIG_HEIGHT - 20, blueGold, { color: '#fff' }).setOrigin(0.5, 0.5)
-  } else {
-    redGoldText.setText(redGold)
+    redGoldText.setVisible(false)
+    blueGoldText.setVisible(false)
   }
 }
 
@@ -111,17 +130,22 @@ function update() {
   // Handle game state changes
   if (!gameState) {
     gameState = GAME_STATE_MAIN_MENU
-    stateMainMenuStart(this)
   } else if (gameState == GAME_STATE_MAIN_MENU) {
     stateMainMenuUpdate(this)
+  } else if (gameState == GAME_STATE_BUY) {
+    stateBuyUpdate(this)
   } else if (gameState == GAME_STATE_COMBAT) {
     stateCombatUpdate(this)
+  } else if (gameState == GAME_STATE_WIN) {
+    stateWinUpdate(this)
   } else {
     throw "Unkown game state: " + gameState
   }
 
 
 }
+
+// CALLBACKS //
 
 function callbackUnitHit(shot, unit) {
   if (shot.x_alreadyDead) return
@@ -132,4 +156,43 @@ function callbackUnitHit(shot, unit) {
 
 function callbackShotHitGround(shot, block) {
   shotDestroy(shot, this)
+}
+
+function callbackCollectResource(unit, resource) {
+  if (resource.x_alreadyDead) return
+  resource.x_alreadyDead = true
+  resource.destroy()
+  playerAddGold(unit.x_player, 50)
+  goldUpdateText(this)
+}
+
+// UTILS //
+
+function playerGetRace(player) {
+  if (player == PLAYER_BLUE) return blueRace
+  else if (player == PLAYER_RED) return redRace
+  throw "Bad player: " + player
+}
+
+function playerGetGold(player) {
+  if (player == PLAYER_BLUE) return blueGold
+  else if (player == PLAYER_RED) return redGold
+  throw "Bad player: " + player
+}
+
+function playerAddGold(player, amount) {
+  if (player == PLAYER_BLUE) {
+    blueGold += amount
+    return blueGold
+  } else if (player == PLAYER_RED) {
+    redGold += amount
+    return redGold
+  }
+  throw "Bad player: " + player
+}
+
+function playerGetAi(player) {
+  if (player == PLAYER_BLUE) return blueAi
+  else if (player == PLAYER_RED) return redAi
+  throw "Bad player: " + player
 }
