@@ -51,19 +51,26 @@ function unitCreate(type, xpos, ypos, player, grid, game) {
 }
 
 function unitAi(unit, game) {
-  var toEnemy = unit.x_player == PLAYER_BLUE ? 1 : -1;
   var props = unit.x_props;
-
-  if (props.velocity) unit.setVelocityX(toEnemy*props.velocity);
+  if (props.velocity) unitHandleVelocity(unit, props.velocity, game)
   if (props.fly) unitHandleFly(unit, props.fly, game)
-  if (props.hover) unitHandleHover(unit, props.hover, toEnemy, game)
+  if (props.hover) unitHandleHover(unit, props.hover, game)
   unitHandleJump(unit, game)
   unitHandleShot(unit, game)
   unitHandleSpawn(unit, game)
-  if (props.suicide) unitHandleSuicide(props.suicide, unit, toEnemy, game)
+  if (props.suicide) unitHandleSuicide(props.suicide, unit, game)
 
   // kill units off map
   if (unit.x < 0 || unit.x > CONFIG_WIDTH) unit.destroy()
+}
+
+function unitHandleVelocity(unit, velocity, game) {
+  if (unit.x_alreadyDead) return
+  var toEnemy = unit.x_player == PLAYER_BLUE ? 1 : -1;
+  if (unit.x_lastVelocity == undefined || game.time.now > unit.x_lastVelocity + velocity.time) {
+    unit.x_lastVelocity = game.time.now
+    unit.setVelocityX(toEnemy * velocity.speed)
+  }
 }
 
 function unitHandleJump(unit, game) {
@@ -88,9 +95,11 @@ function unitHandleFly(unit, fly, game) {
     const vy = Math.random() * (fly.max - fly.min) + fly.min
     unit.setVelocityY(vy)
   }
+  if (fly.below && unit.y < fly.below && unit.body.velocity.y < 0) unit.setVelocityY(-unit.body.velocity.y)
 }
 
-function unitHandleHover(unit, hover, toEnemy, game) {
+function unitHandleHover(unit, hover, game) {
+  var toEnemy = unit.x_player == PLAYER_BLUE ? 1 : -1
   if (unit.x_lastHover == undefined || game.time.now > unit.x_lastHover + hover.time) {
     unit.x_lastHover = game.time.now
     const x = toEnemy > 0 ? hover.x : CONFIG_WIDTH - hover.x
@@ -106,10 +115,14 @@ function unitHandleHover(unit, hover, toEnemy, game) {
 
 function unitHandleShot(unit, game) {
   if (unit.x_alreadyDead) return
-  var toEnemy = unit.x_player == PLAYER_BLUE ? 1 : -1
+  const toEnemy = unit.x_player == PLAYER_BLUE ? 1 : -1
+  const xte = toEnemy > 0 ? unit.x : CONFIG_WIDTH - unit.x
   var props = unit.x_props
   if (props.shoot) {
     var shoot = props.shoot;
+    
+    if (shoot.after && xte < shoot.after) return
+
     if (unit.x_lastShot === undefined || game.time.now > unit.x_lastShot + shoot.time) {
       unit.x_lastShot = game.time.now;
       var vel = shoot.speed
@@ -205,8 +218,8 @@ function unitDestroy(unit, game) {
   unitRelease(unit)
 }
 
-function unitHandleSuicide(def, unit, toEnemy, game) {
-  const xte = toEnemy > 0 ? unit.x : CONFIG_WIDTH - unit.x
+function unitHandleSuicide(def, unit, game) {
+  const xte = unit.x_player == PLAYER_BLUE ? unit.x : CONFIG_WIDTH - unit.x
   if (xte < def.after) return
   if (xte > def.before) {
     unitDestroy(unit, game)

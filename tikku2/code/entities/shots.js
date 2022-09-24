@@ -30,10 +30,19 @@ function shotDestroy(shot, game) {
   if (p.death) {
     const d = p.death
     if (d.spawn) {
+      const svx = shot.body.velocity.x
+      const svy = shot.body.velocity.y
+      const sv = Math.sqrt(svx*svx + svy*svy)
+      var spawnX = shot.x
+      var spawnY = shot.y
+      if (sv > 0) {
+        spawnX -= 5*svx / sv
+        spawnY -= 5*svy / sv
+      }
       for (var i = 0; i < d.spawn.count; i++) {
         const vx = d.spawn.speed * Math.cos(Math.random()*Math.PI*2)
         const vy = d.spawn.speed * Math.sin(Math.random()*Math.PI*2)
-        shotCreate(d.spawn.type, shot.x, shot.y, vx, vy, shot.x_player, game)
+        shotCreate(d.spawn.type, spawnX, spawnY, vx, vy, shot.x_player, game)
       }
     }
 

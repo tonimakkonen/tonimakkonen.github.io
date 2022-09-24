@@ -4,6 +4,8 @@ const SHOT_SLIME = 2
 const SHOT_FIRE = 3
 const SHOT_FIRE_BALL = 4
 const SHOT_ROCKET = 5
+const SHOT_BOMB = 6
+const SHOT_GREEN_LASER = 7
 
 var configShots = new Map();
 
@@ -41,6 +43,11 @@ configShots.set(
         type: SHOT_FIRE,
         count: 6,
         speed: 300
+      },
+      splatter: {
+        graph: 'splatter_explosion',
+        explosion: true,
+        time: 200
       }
     }
   }
@@ -64,5 +71,33 @@ configShots.set(
       }
     },
     damage: 10
+  }
+)
+
+configShots.set(
+  SHOT_BOMB,
+  {
+    graph: 'shot_bomb',
+    death: {
+      spawn: {
+        type: SHOT_FIRE,
+        count: 10,
+        speed: 150
+      },
+      splatter: {
+        graph: 'splatter_explosion',
+        explosion: true,
+        time: 200
+      }
+    },
+    damage: 5
+  }
+)
+
+configShots.set(
+  SHOT_GREEN_LASER,
+  {
+    graph: 'shot_green_laser',
+    damage: 4,
   }
 )

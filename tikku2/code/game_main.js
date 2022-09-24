@@ -92,8 +92,7 @@ function create() {
   this.physics.add.overlap(groupBlueUnits, groupResources, callbackCollectResource, null, this)
   this.physics.add.overlap(groupRedUnits, groupResources, callbackCollectResource, null, this)
 
-
-  // create tiles
+  this.add.sprite(CONFIG_WIDTH/2, CONFIG_HEIGHT/2, 'bg')
   mapCreate(this)
 
 }

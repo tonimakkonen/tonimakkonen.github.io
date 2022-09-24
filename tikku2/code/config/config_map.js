@@ -19,7 +19,6 @@ configMapBase.push({ x: 5, y: 0, role: ROLE_PROTECTED})
 configMapBase.push({ x: 6, y: 0, role: ROLE_PROTECTED})
 configMapBase.push({ x: 7, y: 0, role: ROLE_MIDDLE})
 configMapBase.push({ x: 8, y: 0, role: ROLE_MIDDLE})
-configMapBase.push({ x: 8, y: 0, role: ROLE_MIDDLE})
 configMapBase.push({ x: 9, y: 0, role: ROLE_EDGE})
 configMapBase.push({ x: 10, y: 0, role: ROLE_EDGE})
 

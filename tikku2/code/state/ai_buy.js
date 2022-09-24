@@ -3,10 +3,10 @@
 
 function aiBuyUpdate(buyPlayer, game) {
 
-  // TODO: Add waiting
 
   aiBuyLogicSellBroken(buyPlayer, game)
   aiBuyLogicOuterWall(buyPlayer, game)
+  aiBuyLogicNeeded(buyPlayer, game)
   aiBuyLogicBuyGameWinners(buyPlayer, game)
   for (var i = 0; i < 3; i++) aiBuyLogicRandom(buyPlayer, game)
   // TODO: Sell crap building for better buildings
@@ -23,7 +23,7 @@ function aiBuyLogicSellBroken(buyPlayer, game) {
   for (const grid of map) {
     if (grid.player == buyPlayer && grid.building != undefined) {
       const b = grid.building
-      if (b.health <= 0.25 * b.x_props.health) {
+      if (b.x_health <= 0.25 * b.x_props.health) {
         console.log('selling building: ' + b.x_props.name)
         buySellBuilding(b, game)
       }
@@ -36,6 +36,36 @@ function aiBuyLogicOuterWall(buyPlayer, game) {
   const grid = aiBuySelectRandomGrid(buyPlayer, ROLE_EDGE)
   if (grid != null) aiBuyRandomBuy(grid, game);
   else console.log('no free outer wall grid')
+}
+
+function aiBuyLogicNeeded(buyPlayer, game) {
+  console.log('>> AI: checking needed building for player ' + (buyPlayer == PLAYER_BLUE ? ' blue' : 'red'))
+  const rp = configRaces.get(playerGetRace(buyPlayer))
+  for (const nbt of rp.need) {
+
+    const nbp = configUnits.get(nbt)
+
+    const count = aiBuyGetBuildingCount(buyPlayer, nbt)
+    if (count > 0) {
+      console.log('Already have a ' + nbp.name + ' built')
+      continue
+    }
+
+    if (nbp.cost > playerGetGold(buyPlayer)) {
+      console.log('will not buy ' + nbp.name + ' due to insufficient fund')
+      continue
+    }
+
+    const grid = aiBuySelectRandomGridThatCanBuild(buyPlayer, nbt)
+    if (grid == null) {
+      console.log('did not find a free grid to build ' + nbp.name)
+      continue
+    }
+
+    buyBuyBuilding(grid, nbt, game)
+
+  }
+
 }
 
 function aiBuyLogicRandom(buyPlayer, game) {
@@ -68,10 +98,12 @@ function aiBuyLogicBuyGameWinners(buyPlayer, game) {
 // UTILS //
 ///////////
 
-function aiBuyGetBuildingCount(player) {
+function aiBuyGetBuildingCount(player, type) {
   var count = 0
   for (const grid of map) {
-    if(grid.player == player && grid.building != undefined) count += 1
+    if(grid.player == player && grid.building != undefined) {
+      if (type == undefined || grid.building.x_type == type) count += 1
+    }
   }
   return count
 }
@@ -82,6 +114,18 @@ function aiBuySelectRandomGrid(player, role) {
     if (grid.player == player && grid.building == undefined) {
       if (!role) options.push(grid)
       else if(grid.role == role) options.push(grid)
+    }
+  }
+  if(options.length == 0) return null
+  return options[Math.floor(Math.random() * options.length)]
+}
+
+function aiBuySelectRandomGridThatCanBuild(player, building) {
+  var options = []
+  for (const grid of map) {
+    if (grid.player == player && grid.building == undefined) {
+      const list = aiBuyGetList(grid)
+      if (list.includes(building)) options.push(grid)
     }
   }
   if(options.length == 0) return null
