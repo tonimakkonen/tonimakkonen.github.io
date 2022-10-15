@@ -21,6 +21,8 @@ const UNIT_BOMBER_BASE = 110
 const UNIT_BOMBER = 111
 const UNIT_MECH_BASE = 112
 const UNIT_MECH = 113
+// buildings: 7
+// real units: 6
 
 configUnits.set(
   UNIT_HUMAN_BASE,
@@ -324,6 +326,8 @@ const UNIT_FLYER_NEST = 209
 const UNIT_FLYER = 210
 const UNIT_DRAGONBUG_NEST = 211
 const UNIT_DRAGONBUG = 212
+// buildings: 7
+// real units: 5
 
 configUnits.set(
   UNIT_BUG_BASE,
@@ -607,6 +611,8 @@ const UNIT_SKY_BASE = 310
 const UNIT_SEEKER = 311
 const UNIT_TEMPLE = 312
 const UNIT_MOTHERSHIP = 313
+// buildings: 7
+// real units: 5
 
 configUnits.set(
   UNIT_ALIEN_BASE,
@@ -628,7 +634,10 @@ configUnits.set(
     health: 8,
     velocity: { speed: 50, time: 500 },
     mass: 1.5,
-    shoot: { type: SHOT_GREEN_LASER, amin: 5, amax: 45, speed: 250, time: 900 }
+    shoot: { type: SHOT_GREEN_LASER, amin: 5, amax: 45, speed: 250, time: 900 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 3, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -642,7 +651,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 180,
-    spawn: { unit: UNIT_ALIEN, time: 9000 }
+    spawn: { unit: UNIT_ALIEN, time: 9000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -656,7 +668,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 220,
-    spawn: { unit: UNIT_FF, time: 0, radius: CONFIG_BLOCK*5, count: 40, maxTimes: 1 }
+    spawn: { unit: UNIT_FF, time: 0, radius: CONFIG_BLOCK*5, count: 40, maxTimes: 1 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -680,7 +695,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 300,
-    spawn: { unit: UNIT_FIRE_SPIDER, time: 4000 }
+    spawn: { unit: UNIT_FIRE_SPIDER, time: 4000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -713,7 +731,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 200,
-    shoot: { type: SHOT_GREEN_LASER, amin: -5, amax: 30, speed: 500, time: 1400 }
+    shoot: { type: SHOT_GREEN_LASER, amin: -5, amax: 45, speed: 550, time: 1200 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -727,7 +748,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 500,
-    spawn: { unit: UNIT_DESTROYER, time: 10000 }
+    spawn: { unit: UNIT_DESTROYER, time: 10000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -735,11 +759,14 @@ configUnits.set(
   UNIT_DESTROYER,
   {
     graph: 'destroyer',
-    health: 15,
+    health: 12,
     velocity: { speed: 60, time: 250 },
     gravity: 0,
     fly: { max: 40, min: -40, time: 800 },
-    shoot: { type: SHOT_GREEN_LASER, amin: 0, amax: 15, speed: 500, time: 600 }
+    shoot: { type: SHOT_ENERGY, amin: -5, amax: 5, speed: 300, time: 2000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 4, speed: 200, time: 500 }
+    }
   }
 )
 
@@ -790,7 +817,10 @@ configUnits.set(
     building: true,
     width: 40,
     cost: 750,
-    spawn: { unit: UNIT_MOTHERSHIP, time: 40000 }
+    spawn: { unit: UNIT_MOTHERSHIP, time: 40000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 100, time: 400 }
+    }
   }
 )
 
@@ -803,5 +833,8 @@ configUnits.set(
     gravity: 0,
     shoot: { type: SHOT_GREEN_LASER, amin: -30, amax: 45, speed: 500, time: 600 },
     spawn: { unit: UNIT_ALIEN, time: 8000 },
+    death: {
+      splatter: { graph: 'splatter_metal', count: 6, speed: 100, time: 400 }
+    }
   }
 )

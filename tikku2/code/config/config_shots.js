@@ -6,6 +6,7 @@ const SHOT_FIRE_BALL = 4
 const SHOT_ROCKET = 5
 const SHOT_BOMB = 6
 const SHOT_GREEN_LASER = 7
+const SHOT_ENERGY = 8
 
 var configShots = new Map();
 
@@ -99,5 +100,21 @@ configShots.set(
   {
     graph: 'shot_green_laser',
     damage: 4,
+  }
+)
+
+configShots.set(
+  SHOT_ENERGY,
+  {
+    graph: 'shot_energy',
+    gravity: 0,
+    death: {
+      splatter: {
+        graph: 'splatter_energy',
+        explosion: true,
+        time: 100
+      }
+    },
+    damage: 15
   }
 )

@@ -167,6 +167,12 @@ function callbackCollectResource(unit, resource) {
 
 // UTILS //
 
+function playerGetX(player, x) {
+  if (player == PLAYER_BLUE) return x
+  else if (player == PLAYER_RED) return CONFIG_WIDTH - x
+  throw "Bad player: " + player
+}
+
 function playerGetRace(player) {
   if (player == PLAYER_BLUE) return blueRace
   else if (player == PLAYER_RED) return redRace

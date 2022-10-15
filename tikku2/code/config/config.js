@@ -16,6 +16,8 @@ const PLAYER_RED = 2
 const AI_PLAYER = 1
 const AI_NORMAL = 2
 const AI_DIFFICULT = 3
+const AI_INSANE = 4
+const AI_SWARM = 5
 
 const CONFIG_COMBAT_LEN = 40
 const CONFIG_MAX_SPAWN = 35

@@ -40,6 +40,8 @@ function stateMainMenuStart(game) {
   mmAddSelect(blueRow + delta, mmbd*4, 'Player', undefined, mmBlueSelectAi, true, () => { blueAi = AI_PLAYER }, game)
   mmAddSelect(blueRow + delta, mmbd*5, 'AI (normal)', undefined, mmBlueSelectAi, false, () => { blueAi = AI_NORMAL }, game)
   mmAddSelect(blueRow + delta, mmbd*6, 'AI (difficult)', undefined, mmBlueSelectAi, false, () => { blueAi = AI_DIFFICULT }, game)
+  mmAddSelect(blueRow + delta, mmbd*7, 'AI (insane)', undefined, mmBlueSelectAi, false, () => { blueAi = AI_INSANE }, game)
+  mmAddSelect(blueRow + delta, mmbd*8, 'Swarm', undefined, mmBlueSelectAi, false, () => { blueAi = AI_SWARM }, game)
 
   mmUi.push(game.add.text(redRow, mmbd*2, 'Red player settings').setOrigin(0.5, 0.5))
   mmUi.push(game.add.text(redRow - delta, mmbd*3, 'Race').setOrigin(0.5, 0.5))
@@ -50,8 +52,10 @@ function stateMainMenuStart(game) {
   mmAddSelect(redRow + delta, mmbd*4, 'Player', undefined, mmRedSelectAi, true, () => { redAi = AI_PLAYER }, game)
   mmAddSelect(redRow + delta, mmbd*5, 'AI (normal)', undefined, mmRedSelectAi, false, () => { redAi = AI_NORMAL }, game)
   mmAddSelect(redRow + delta, mmbd*6, 'AI (difficult)', undefined, mmRedSelectAi, false, () => { redAi = AI_DIFFICULT }, game)
+  mmAddSelect(redRow + delta, mmbd*7, 'AI (insane)', undefined, mmRedSelectAi, false, () => { redAi = AI_INSANE }, game)
+  mmAddSelect(redRow + delta, mmbd*8, 'Swarm', undefined, mmRedSelectAi, false, () => { redAi = AI_SWARM }, game)
 
-  mmButtons.push(buttonAddClickButton(CONFIG_WIDTH * 0.5, mmbd*8, mmButtonWidth, mmButtonHeight, 'Start game', undefined, () => { mmDone = true }, game))
+  mmButtons.push(buttonAddClickButton(CONFIG_WIDTH * 0.5, mmbd*10, mmButtonWidth, mmButtonHeight, 'Start game', undefined, () => { mmDone = true }, game))
 
 }
 
@@ -112,11 +116,10 @@ function mmSetupGame(game) {
   const baseY = CONFIG_HEIGHT - CONFIG_BLOCK * 3
   const baseBlueX = CONFIG_BLOCK
   const baseRedX = CONFIG_WIDTH - baseBlueX
-  blueBase = unitCreate(br.base, baseBlueX, baseY, PLAYER_BLUE, undefined, game)
-  redBase = unitCreate(rr.base, baseRedX, baseY, PLAYER_RED, undefined, game)
+  if (blueAi != AI_SWARM) blueBase = unitCreate(br.base, baseBlueX, baseY, PLAYER_BLUE, undefined, game)
+  if (redAi != AI_SWARM) redBase = unitCreate(rr.base, baseRedX, baseY, PLAYER_RED, undefined, game)
 
   // Set up resources
-  // TODO: For easy debugging now
   blueGold = 500
   redGold = 500
   goldUpdateText(game)

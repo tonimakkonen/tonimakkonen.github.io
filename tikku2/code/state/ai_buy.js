@@ -3,6 +3,8 @@
 
 function aiBuyUpdate(buyPlayer, game) {
 
+  // no buying on swam
+  if (playerGetAi(buyPlayer) == AI_SWARM) return true
 
   aiBuyLogicSellBroken(buyPlayer, game)
   aiBuyLogicOuterWall(buyPlayer, game)

@@ -19,6 +19,7 @@ function resLoadResources(game) {
   game.load.image('splatter_red', 'graph/splatter_red.png')
   game.load.image('splatter_metal', 'graph/splatter_metal.png')
   game.load.image('splatter_explosion', 'graph/splatter_explosion.png')
+  game.load.image('splatter_energy', 'graph/splatter_energy.png')
 
   game.load.image('resource', 'graph/resource.png')
 

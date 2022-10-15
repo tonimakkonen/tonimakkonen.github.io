@@ -9,6 +9,9 @@ function stateCombatUpdate(game) {
 
   if (!combatStart) stateCombatStart(game)
 
+  // Run swarm logic (if needed)
+  swarmUpdate(game)
+
   // Update text
   combatUpdateText(game)
 
@@ -75,8 +78,12 @@ function stateCombatEnd(game) {
 
   blueGold += 300
   if (blueAi == AI_DIFFICULT) blueGold += 100
+  if (blueAi == AI_INSANE) blueGold += 250
   redGold += 300
   if (redAi == AI_DIFFICULT) redGold += 100
+  if (redAi == AI_INSANE) redGold += 250
+
+  swarmReset()
 
   round += 1
 }

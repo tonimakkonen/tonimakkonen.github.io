@@ -18,7 +18,9 @@ function shotCreate(type, xpos, ypos, xvel, yvel, player, game) {
   newShot.x_props = props
   newShot.x_player = player
   newShot.setVelocity(xvel, yvel)
-  newShot.setGravity(0, 300)
+
+  const gravMult = props.gravity != undefined ? props.gravity : 1.0
+  newShot.setGravity(0.0, 300.0 * gravMult)
   return newShot
 }
 
